@@ -1,20 +1,20 @@
-<h3 align="center">
-Style Transfer with Geometric Deformation - WarpGAN Pytorch
-</h3
+<h2 align="center">
+WarpGAN: Automatic Caricature Generation <br> PyTorch
+</h2>
+  
+> A PyTorch implementation of WarpGAN, a fully automatic network that can generate caricatures given an input face photo. 
+> Besides transferring rich texture styles, WarpGAN learns to automatically predict a set of control points that can warp the photo into a caricature,
+  while preserving identity. We introduce an identity-preserving adversarial loss that aids the discriminator to distinguish between different subjects. 
+  Moreover, WarpGAN allows customization of the generated caricatures by controlling the exaggeration extent and the visual styles.
 
-<img src=demo/demo.gif> 
+This repository is the unofficial PyTorch implementation of the paper:  
 
-> 3D visualization of estimated depth and scene flow from two temporally consecutive images.  
-> Intermediate frames are interpolated using the estimated scene flow. (fine-tuned model, tested on KITTI Benchmark)
+&nbsp;&nbsp;&nbsp;[**WarpGAN: Automatic Caricature Generation**](https://arxiv.org/pdf/1811.10100.pdf)  
+&nbsp;&nbsp;&nbsp;[Yichun Shi](https://github.com/seasonSH), [Debayan Deb](https://github.com/ronny3050) and [Anil K. Jain](https://www.cse.msu.edu/~jain/)  
+&nbsp;&nbsp;&nbsp;*CVPR*, 2019 (**Oral Presentation**)  
+&nbsp;&nbsp;&nbsp;[Arxiv](https://arxiv.org/pdf/1811.10100.pdf)
 
-This repository is the official PyTorch implementation of the paper:  
-
-&nbsp;&nbsp;&nbsp;[**Self-Supervised Monocular Scene Flow Estimation**](http://openaccess.thecvf.com/content_CVPR_2020/papers/Hur_Self-Supervised_Monocular_Scene_Flow_Estimation_CVPR_2020_paper.pdf)  
-&nbsp;&nbsp;&nbsp;[Junhwa Hur](https://hurjunhwa.github.io) and [Stefan Roth](https://www.visinf.tu-darmstadt.de/visinf/team_members/sroth/sroth.en.jsp)  
-&nbsp;&nbsp;&nbsp;*CVPR*, 2020 (**Oral Presentation**)  
-&nbsp;&nbsp;&nbsp;[Paper](http://openaccess.thecvf.com/content_CVPR_2020/papers/Hur_Self-Supervised_Monocular_Scene_Flow_Estimation_CVPR_2020_paper.pdf) / [Supplemental](http://openaccess.thecvf.com/content_CVPR_2020/supplemental/Hur_Self-Supervised_Monocular_Scene_CVPR_2020_supplemental.pdf) / [Arxiv](https://arxiv.org/abs/2004.04143)
-
-- Contact: junhwa.hur[at]gmail.com  
+- Contact: ftamur16@ku.edu.tr
 
 ## Getting started
 This code has been developed with Anaconda (Python 3.7), **PyTorch 1.2.0** and CUDA 10.0 on Ubuntu 16.04.  
