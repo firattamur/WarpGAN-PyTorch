@@ -14,7 +14,10 @@ This repository is the unofficial PyTorch implementation of the paper:
 &nbsp;&nbsp;&nbsp;*CVPR*, 2019 (**Oral Presentation**)  
 &nbsp;&nbsp;&nbsp;[Arxiv](https://arxiv.org/pdf/1811.10100.pdf)
 
-- Contact: ftamur16@ku.edu.tr
+- Contact: 
+  - nmutlu17@ku.edu.tr
+  - ftamur16@ku.edu.tr
+  - oguzhanyildirim16@ku.edu.tr
 
 ## Getting started
 This code has been developed with Anaconda (Python 3.7), **PyTorch 1.2.0** and CUDA 10.0 on Ubuntu 16.04.  
