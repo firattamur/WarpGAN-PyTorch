@@ -124,7 +124,7 @@ dmypy.json
 .pyre/
 
 # dataset folder
-datasets/web-caricature
+datasets/WebCaricature
 
 
 
