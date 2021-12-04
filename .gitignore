@@ -122,3 +122,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# dataset folder
+datasets/web-caricature
+
+
+
