@@ -20,34 +20,25 @@ This repository is the unofficial PyTorch implementation of the paper:
   - oguzhanyildirim16@ku.edu.tr
 
 ## Getting started
-This code has been developed with Anaconda (Python 3.7), **PyTorch 1.2.0** and CUDA 10.0 on Ubuntu 16.04.  
-Based on a fresh [Anaconda](https://www.anaconda.com/download/) distribution and [PyTorch](https://pytorch.org/) installation, following packages need to be installed:  
+This code has been developed with Anaconda (**Python 3.8**), **PyTorch 1.10.0** and **CUDA 11.3**. 
+
+Create a conda environment for the project:
 
   ```Shell
-  conda install pytorch==1.2.0 torchvision==0.4.0 cudatoolkit=10.0 -c pytorch
-  pip install tensorboard
-  pip install pypng==0.0.18
-  pip install colorama
-  pip install scikit-image
-  pip install pytz
-  pip install tqdm==4.30.0
-  pip install future
+  conda create --name warpgan python=3.8
   ```
+  
+Activate conda activate to work on project:
 
-Then, please excute the following to install the Correlation and Forward Warping layer:
   ```Shell
-  ./install_modules.sh
+  conda activate warpgan
   ```
+  
+Install packages with installation script:
 
-**For PyTorch version > 1.3**  
-Please put the **`align_corners=True`** flag in the `grid_sample` function in the following files:
+  ```Shell
+  ./install.sh
   ```
-  augmentations.py
-  losses.py
-  models/modules_sceneflow.py
-  utils/sceneflow_util.py
-  ```
-
 
 ## Dataset
 
