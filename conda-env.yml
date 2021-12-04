@@ -1,0 +1,25 @@
+name: warpgan
+channels:
+  - https://conda.anaconda.org/gurobi
+  - http://conda.anaconda.org/gurobi
+  - conda-forge
+  - defaults
+  - pkgs
+dependencies:
+  - ca-certificates=2021.10.8=h033912b_0
+  - libcxx=12.0.1=habf9029_0
+  - libffi=3.4.2=h0d85af4_5
+  - libzlib=1.2.11=h9173be1_1013
+  - ncurses=6.2=h2e338ed_4
+  - openssl=3.0.0=h0d85af4_2
+  - pip=21.3.1=pyhd8ed1ab_0
+  - python=3.8.12=h43ca1e7_2_cpython
+  - python_abi=3.8=2_cp38
+  - readline=8.1=h05e3726_0
+  - setuptools=59.4.0=py38h50d1736_0
+  - sqlite=3.37.0=h23a322b_0
+  - tk=8.6.11=h5dbffcc_1
+  - wheel=0.37.0=pyhd8ed1ab_1
+  - xz=5.2.5=haf1e3a3_1
+  - zlib=1.2.11=h9173be1_1013
+prefix: /Users/firattamur/opt/anaconda3/envs/warpgan
