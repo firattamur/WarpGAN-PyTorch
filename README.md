@@ -42,18 +42,25 @@ Install packages with installation script:
 
 ## Dataset
 
-Please download the following to datasets for the experiment:
-  - [KITTI Raw Data](http://www.cvlibs.net/datasets/kitti/raw_data.php) (synced+rectified data, please refer [MonoDepth2](https://github.com/nianticlabs/monodepth2#-kitti-training-data) for downloading all data more easily)
-  - [KITTI Scene Flow 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow)
+Note: In this section, we assume that you are always in the directory `WarpGAN-PyTorch/`
 
-To save space, we also convert the *KITTI Raw* **png** images to **jpeg**, following the convention from [MonoDepth](https://github.com/mrharicot/monodepth):
+Please download the [WebCaricature](https://cs.nju.edu.cn/rl/WebCaricature.htm) to dataset for the experiment:
+
+  - Unzip dataset and place into `/datasets`
+ 
+### Preprocess Dataset:
+
+  - To rename directory names in the dataset:
+
+  ```shell
+  python utils/rename.py
   ```
-  find (data_folder)/ -name '*.png' | parallel 'convert {.}.png {.}.jpg && rm {}'
-  ```   
-We also converted images in *KITTI Scene Flow 2015* as well. Please convert the png images in `image_2` and `image_3` into jpg and save them into the seperate folder **`image_2_jpg`** and **`image_3_jpg`**.  
-
-To save space further, you can delete the velodyne point data in KITTI raw data and optionally download the [*Eigen Split Projected Depth*](https://drive.google.com/file/d/1a97lgOgrChkLxi_nvRpmbsKspveQ6EyD/view?usp=sharing) for the monocular depth evaluation on the Eigen Split. We converted the velodyne point data of the Eigen Test images in the numpy array format using code from [MonoDepth](https://github.com/mrharicot/monodepth). After downloading and unzipping it, you can merge with the KITTI raw data folder.  
-  - [Eigen Split Projected Depth](https://drive.google.com/file/d/1a97lgOgrChkLxi_nvRpmbsKspveQ6EyD/view?usp=sharing)
+  
+  - To normalize all faces in the dataset:
+  
+  ```shell
+  python align/align_dataset.py datasets/index_txt/landmarks.txt datasets/webcaricacture_aligned_256 --scale 0.7
+  ```
 
 ## Training and Inference
 The **[scripts](scripts/)** folder contains training\/inference scripts of all experiments demonstrated in the paper (including ablation study).
