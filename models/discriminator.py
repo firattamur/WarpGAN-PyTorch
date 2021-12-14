@@ -27,10 +27,6 @@ class Discriminator(nn.Module):
 
         """
 
-        # collection of convs with kernel=4, stride=2
-        # leakyReLu applied after each conv
-        # padding=1 and mode is reflect
-
         """
         
         Output dimension calculation from pytorch docs
@@ -38,42 +34,61 @@ class Discriminator(nn.Module):
 
         Dout = ( Din + 2 * pad - dilation * ( kernel_size - 1 ) - 1 ) / ( stride ) + 1
 
-        Dout = (Dint 2 * 1 - 1 * (4 - 1) - 1 / ( 2 ) + 1) -> (Din - 2) / 2 + 1 => Din / 2
-
         """
 
         self.convs = nn.Sequential(
 
+            # inp: (in_batch, in_height,   in_width,   in_channels)
+            # out: (in_batch, in_height/2, in_width/2, 32)
             Conv2d(activation=nn.LeakyReLU, in_channels=in_channels, out_channels=32, kernel_size=4, stride=2),
 
-            Conv2d(activation=nn.LeakyReLU, in_channels=32, out_channels=64, kernel_size=4, stride=2),
+            # inp: (in_batch, in_height/2, in_width/2, 32)
+            # out: (in_batch, in_height/4, in_width/4, 64)
+            Conv2d(activation=nn.LeakyReLU, in_channels=32,         out_channels=64, kernel_size=4, stride=2),
 
-            Conv2d(activation=nn.LeakyReLU, in_channels=64, out_channels=128, kernel_size=4, stride=2),
+            # inp: (in_batch, in_height/4, in_width/4, 64)
+            # out: (in_batch, in_height/8, in_width/8, 128)
+            Conv2d(activation=nn.LeakyReLU, in_channels=64,         out_channels=128, kernel_size=4, stride=2),
             
-            Conv2d(activation=nn.LeakyReLU, in_channels=128, out_channels=256, kernel_size=4, stride=2),
+            # inp: (in_batch, in_height/8,  in_width/8, 128)
+            # out: (in_batch, in_height/16, in_width/16, 256)
+            Conv2d(activation=nn.LeakyReLU, in_channels=128,        out_channels=256, kernel_size=4, stride=2),
 
-            Conv2d(activation=nn.LeakyReLU, in_channels=256, out_channels=512, kernel_size=4, stride=2),
+            # inp: (in_batch, in_height/16, in_width/16, 256)
+            # out: (in_batch, in_height/32, in_width/32, 512)
+            Conv2d(activation=nn.LeakyReLU, in_channels=256,        out_channels=512, kernel_size=4, stride=2),
 
         )
 
         # patch discriminator
+        # inp: (in_batch, in_height/32, in_width/32, 512)
+        # out: (in_batch, in_height/32, in_width/32, 3)
         self.conv2d = nn.Conv2d(in_channels=512, out_channels=3, kernel_size=1, stride=1, padding='same')
         
         # global discriminator
+        # inp: (in_batch, in_height/32, in_width/32, 512)
+        # out: (in_batch, in_height/32 * in_width/32 * 512)
         self.flatten = nn.Flatten()
 
         # size of flatten tensor
         # dimension reduces to half after each conv layer that's why:
 
-        final_height = in_height / (2 ** 5)
-        final_width  = in_width  / (2 ** 5)
+        out_height = in_height / 32
+        out_width  = in_width  / 32
 
-        in_features = 512 * final_height * final_width * in_batch
+        in_features = 512 * out_height * out_width * in_batch
 
+        # inp: (in_batch, in_height/32 * in_width/32 * 512)
+        # out: (in_batch, 512)
         self.linear1 = nn.Linear(in_features=in_features, out_features=bottleneck_size)
+
+        # inp: (in_batch, 512)
+        # out: (in_batch, n_classes)
         self.linear2 = nn.Linear(in_features=bottleneck_size, out_features=n_classes)
 
+        # initalize all network weights
         self.initialize_weights()
+
 
     def forward(self, x: torch.Tensor) -> tuple:
         """
@@ -81,26 +96,42 @@ class Discriminator(nn.Module):
         Forward function for Discriminator.
 
         :param x: input image
-            :shape: ?
+            :shape: (in_batch, in_height,    in_width, in_channels)
 
         :return : patch5_logits and logits
-            :shape patch5_logits: ?
-            :shape        logits: ?
+            :shape patch5_logits: (in_batch, in_height/32, in_width/32, 3)
+            :shape        logits: (in_batch, n_classes)
         
         """
 
+        # inp: (in_batch, in_height,    in_width,    in_channels)
+        # out: (in_batch, in_height/32, in_width/32, 512)
         out = self.convs(x)
 
         # Patch Discrminator
+        # inp: (in_batch, in_height/32, in_width/32, 512)
+        # out: (in_batch, in_height/32, in_width/32, 3)
         patch5_logits = self.conv2d(out)
+
+        # inp: (in_batch, in_height/32, in_width/32, 3)
+        # out: (in_batch * in_height/32 * in_width/32, 3)
         patch5_logits = patch5_logits.reshape(-1, 3)
 
         # Global Discriminator
+        # inp: (in_batch, in_height/32, in_width/32, 512)
+        # out: (in_batch, in_height/32 * in_width/32 * 512)
         flatten = self.flatten(out)
 
+        # inp: (in_batch, in_height/32 * in_width/32 * 512)
+        # out: (in_batch, 512)
         prelogits = self.linear1(flatten)
+
+        # inp: (in_batch, in_height/32 * in_width/32 * 512)
+        # out: (in_batch, 512)
         prelogits = tf.normalize(prelogits, axis=1)
 
+        # inp: (in_batch, 512)
+        # out: (in_batch, n_classes)
         logits = self.linear2(prelogits)
 
         return patch5_logits, logits
