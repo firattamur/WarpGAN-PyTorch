@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.functional as tf
 
 
-class Conv2d(nn.Module):
+class DeConv2d(nn.Module):
 
     def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
         """
@@ -20,7 +20,7 @@ class Conv2d(nn.Module):
         self.pad = pad
 
         self.conv_block = nn.Sequential(
-            nn.Conv2d(**kwargs, padding='valid'),
+            nn.ConvTranspose2d(**kwargs, padding='valid'),
             activation(inplace=True)
         )
 

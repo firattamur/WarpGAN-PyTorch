@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.functional as tf
+from torch.nn.modules.activation import LeakyReLU, ReLU
 
 
 class StyleEncoder(nn.Module):
@@ -12,7 +13,11 @@ class StyleEncoder(nn.Module):
 
     def __init__(self, channels_in: int):
 
-        pass
+        self.convs = nn.Sequential(
+
+            
+
+        )
 
 
     def forward(self, x):
