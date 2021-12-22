@@ -54,7 +54,7 @@ def _interpolate_bilinear(grid: torch.Tensor, query_points: torch.Tensor, indexi
         
         # max_floor is size_in_indexing_dimension - 2 so that max_floor + 1
         # is still a valid index into the grid.
-        max_floor = torch.as_tensor(size_in_indexing_dimension - 2).type(query_type)
+        max_floor = torch.tensor(size_in_indexing_dimension - 2, dtype=query_type)
         min_floor = torch.tensor(0.0, dtype=query_type)        
         floor = torch.minimum(torch.maximum(min_floor, torch.floor(queries)), max_floor)
         int_floor = floor.type(torch.int32)
