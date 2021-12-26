@@ -44,6 +44,7 @@ class StyleEncoder(nn.Module):
             Dout = ( Din + 2 * pad - kernel_size) / ( stride ) + 1
 
         """
+        super(StyleEncoder, self).__init__()
 
         # inp: (in_batch, in_height, in_width,   in_channels)
         # out: (in_batch, in_height/4, in_width/4, initial * 4)
@@ -116,6 +117,7 @@ class StyleEncoder(nn.Module):
         #    -> style_vec = tf.identity(style_vec, name='style_vec')
         # but for pytorch no need to that...
         # here an answer: https://github.com/pytorch/pytorch/issues/9160#issuecomment-402494129
+        
         return style_vector
         
 
