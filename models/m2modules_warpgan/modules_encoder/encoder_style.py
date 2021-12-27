@@ -46,41 +46,41 @@ class StyleEncoder(nn.Module):
         """
         super(StyleEncoder, self).__init__()
 
-        # inp: (in_batch, in_channels,     in_height,   in_width)
-        # out: (in_batch, in_channels * 4, in_height/4, in_width/4)
+        # inp: (in_batch, in_channels, in_height,   in_width)
+        # out: (in_batch, initial * 4, in_height/4, in_width/4)
         self.convs = nn.Sequential(
 
             # inp: (in_batch, in_channels, in_height, in_width)
-            # out: (in_batch, in_channels, in_height, in_width)
+            # out: (in_batch, initial,     in_height, in_width)
             CustomConv2d(activation=nn.ReLU, in_channels=in_channels, out_channels=initial,     kernel_size=7, stride=1, pad=3),
 
-            # inp: (in_batch, in_channels,   in_height,   in_width)
-            # out: (in_batch, in_channels*2, in_height/2, in_width/2)
+            # inp: (in_batch, initial,   in_height,   in_width)
+            # out: (in_batch, initial*2, in_height/2, in_width/2)
             CustomConv2d(activation=nn.ReLU, in_channels=initial,     out_channels=initial * 2, kernel_size=4, stride=2),
 
-            # inp: (in_batch, in_channels*2, in_height/2, in_width/4)
-            # out: (in_batch, in_channels*4, in_height/4, in_width/4)
+            # inp: (in_batch, initial*2, in_height/2, in_width/4)
+            # out: (in_batch, initial*4, in_height/4, in_width/4)
             CustomConv2d(activation=nn.ReLU, in_channels=initial * 2, out_channels=initial * 4, kernel_size=4, stride=2),
 
         )
 
         # calculate height and width after convolution
 
-        # convs out: (in_batch, in_channels*4, in_height/4, in_width/4)
+        # convs out: (in_batch, initial*4, in_height/4, in_width/4)
         out_height = in_height / 4
         out_width  = in_width  / 4
 
-        # inp: (in_batch, in_channels*4, in_height/4, in_width/4)
-        # out: (in_batch, in_channels*4, 1,           1)
+        # inp: (in_batch, initial*4, in_height/4, in_width/4)
+        # out: (in_batch, initial*4, 1,           1)
         self.avg_pool2d = nn.AvgPool2d(kernel_size=(out_height, out_width), stride=2, padding='valid')
 
-        # inp: (in_batch, in_channels*4, 1,           1)
-        # out: (in_batch, in_channels*4 * 1 * 1)
+        # inp: (in_batch, initial*4, 1,           1)
+        # out: (in_batch, initial*4 * 1 * 1)
         self.flatten = nn.Flatten()
 
         in_features = 1 * 1 * initial * 4
 
-        # inp: (in_batch, in_channels*4 * 1 * 1)
+        # inp: (in_batch, initial*4 * 1 * 1)
         # out: (in_batch, style_size)
         self.linear = nn.Linear(in_features=in_features, out_features=style_size)
 
@@ -98,19 +98,19 @@ class StyleEncoder(nn.Module):
         
         """
         
-        # inp: (in_batch, in_channels,     in_height,   in_width)
-        # out: (in_batch, in_channels * 4, in_height/4, in_width/4)
+        # inp: (in_batch, in_channels, in_height,   in_width)
+        # out: (in_batch, initial * 4, in_height/4, in_width/4)
         out = self.convs(x)
 
-        # inp: (in_batch, in_channels*4, in_height/4, in_width/4)
-        # out: (in_batch, in_channels*4, 1,           1)
+        # inp: (in_batch, initial*4, in_height/4, in_width/4)
+        # out: (in_batch, initial*4, 1,           1)
         pooled = self.avg_pool2d(out)
 
-        # inp: (in_batch, in_channels*4, 1,           1)
-        # out: (in_batch, in_channels*4 * 1 * 1)
+        # inp: (in_batch, initial*4, 1,           1)
+        # out: (in_batch, initial*4 * 1 * 1)
         flatted = self.flatten(pooled)
         
-        # inp: (in_batch, in_channels*4 * 1 * 1)
+        # inp: (in_batch, initial*4 * 1 * 1)
         # out: (in_batch, style_size)
         style_vector = self.linear(flatted)
 
