@@ -91,7 +91,7 @@ class StyleEncoder(nn.Module):
         Forward function for Discriminator.
 
         :param x: input image
-            :shape: (in_batch, in_height, in_width, in_channels)
+            :shape: (in_batch, in_channels, in_height, in_width)
 
         :return : style vector
             :shape: (in_batch, style_size)
