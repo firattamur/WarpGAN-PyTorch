@@ -1,14 +1,26 @@
 import torch
 import torch.nn as nn
-from typing import Union
+
+
+from instancenorm2d import CustomInstanceNorm2d
 
 
 class CustomSequential(nn.Sequential):
+    """
 
-    def forward(self, x: Union[torch.Tensor, tuple(torch.Tensor, torch.Tensor, torch.Tensor)]) -> torch.Tensor:
+    In sequential module we have convolution layers and after convolution we have our CustomInstanceNorm2d layer. 
+    Because CustomInstanceNorm2d accepts 3 inputs, x: torch.Tensor, gamma: torch.Tensor and beta: torch.Tensor. 
+    We need to pass 3 inputs to Sequential layer. Normal pytorch nn.Sequential only support single input.
+    This class is created to pass multiple inputs to CustomInstanceNorm2d in Sequential layer.
+    
+
+    """
+
+
+    def forward(self, x: tuple(torch.Tensor, torch.Tensor, torch.Tensor)) -> torch.Tensor:
         """
-
-        :param x: torch.Tensor or tuple of torch.Tensors if it is a tuple it contains gamma and beta.
+        
+        :param x: tuple of torch.Tensors
             :shape: (b, c, h, w)
 
             if type(x) is tuple:
@@ -23,11 +35,9 @@ class CustomSequential(nn.Sequential):
 
         for module in self._modules.values():
 
-            # this case is applied for our custom instance norm layer
-            # custom instance norm layer accepts x, gamma and beta
-            if type(inputs) == tuple:
-                inputs = module(*inputs)
+            if isinstance(module, CustomInstanceNorm2d):
+                inputs = tuple(module(*inputs),   inputs[1], inputs[2])
             else:
-                inputs = module(inputs)
+                inputs = tuple(module(inputs[0]), inputs[1], inputs[2])
 
-        return inputs
+        return inputs 
