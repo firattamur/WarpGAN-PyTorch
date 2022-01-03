@@ -36,7 +36,7 @@ class Decoder(nn.Module):
         self.controller_decoder = DecoderController(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, initial=initial)
         
 
-    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor, texture_only: bool = False) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
         """
         
         Forward function for Decoder.
@@ -73,6 +73,9 @@ class Decoder(nn.Module):
         # out_encoded          : (in_batch, initial(default=64), in_height, in_width)
         # out_images_rendered  : (in_batch, initial(default=64), in_height, in_width)
         encoded, images_rendered = self.controller_decoder(x, beta, gamma)
+
+        if texture_only:
+            return images_rendered
 
         # inp_encoded        : (in_batch, initial(default=64), in_height, in_width)
         # inp_images_rendered: (in_batch, initial(default=64), in_height, in_width)
