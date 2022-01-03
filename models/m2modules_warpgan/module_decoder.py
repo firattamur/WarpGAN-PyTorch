@@ -36,12 +36,10 @@ class Decoder(nn.Module):
         self.controller_decoder = DecoderController(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, initial=initial)
         
 
-    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
         """
         
         Forward function for Decoder.
-        
-        
         
         :param x        : Encoded Image features
             :shape: (in_batch, initial(default=64) * 4, in_height/4, in_width/4)
@@ -49,14 +47,19 @@ class Decoder(nn.Module):
         :param styles   : Encoded style features
             :shape: (in_batch, style_size(default=8))
 
-        :param x: Encoded features
-            :shape: (in_batch, style_size(default=8))
+        :param scales   : Scale values for images
+            :shape: (in_batch, 1)
 
-        
+        :return : 
+            images_transformed:
+                :shape: (in_batch, initial(default=64), in_height, in_width)
+            images_rendered   :
+                :shape: (in_batch, initial(default=64), in_height, in_width)
+            landmarks_pred    :
+                :shape: (in_batch, n_ldmark * 2)
+            landmarks_norm    :
+                :shape: (1)
 
-        :return : out
-            :shape: ()
-        
         """
 
         # inp: (in_batch, style_size(default=8))
