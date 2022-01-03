@@ -2,8 +2,7 @@ import torch
 import torch.nn as nn
 import torch.functional as tf
 
-from .helpers.conv2d import Conv2d
-from .helpers.deconv2d import Deconv2d
+from ..m1layers_warpgan.conv2d import CustomConv2d
 
 
 class Discriminator(nn.Module):
@@ -40,23 +39,23 @@ class Discriminator(nn.Module):
 
             # inp: (in_batch, in_channels, in_height,    in_width)
             # out: (in_batch, 32,          in_height/2,  in_width/2)
-            Conv2d(activation=nn.LeakyReLU, in_channels=in_channels, out_channels=32, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=in_channels, out_channels=32, kernel_size=4, stride=2),
 
             # inp: (in_batch, 32,          in_height/2,  in_width/2)
             # out: (in_batch, 64,          in_height/4,  in_width/4)
-            Conv2d(activation=nn.LeakyReLU, in_channels=32,          out_channels=64, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=32,          out_channels=64, kernel_size=4, stride=2),
 
             # inp: (in_batch, 64,          in_height/4,  in_width/4)
             # out: (in_batch, 128,         in_height/8,  in_width/8)
-            Conv2d(activation=nn.LeakyReLU, in_channels=64,          out_channels=128, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=64,          out_channels=128, kernel_size=4, stride=2),
             
             # inp: (in_batch, 128,         in_height/8,   in_width/8)
             # out: (in_batch, 256,         in_height/16,  in_width/16)
-            Conv2d(activation=nn.LeakyReLU, in_channels=128,         out_channels=256, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=128,         out_channels=256, kernel_size=4, stride=2),
 
             # inp: (in_batch, 256,         in_height/16,  in_width/16)
             # out: (in_batch, 512,         in_height/32,  in_width/32)
-            Conv2d(activation=nn.LeakyReLU, in_channels=256,         out_channels=512, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=256,         out_channels=512, kernel_size=4, stride=2),
 
         )
 
