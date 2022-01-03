@@ -1,5 +1,6 @@
 import torch
 
+
 def _interpolate_bilinear(grid: torch.Tensor, query_points: torch.Tensor, indexing: str = 'ij') -> torch.Tensor:
     """
     Finds values for query points on a grid using bilinear interpolation.

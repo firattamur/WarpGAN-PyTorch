@@ -18,15 +18,11 @@ from __future__ import division
 from __future__ import print_function
 
 import torch
-#import tensorflow as tf
 import numpy as np
 
-from models import dense_image_warp # ??
-from models import interpolate_spline # ??
+from models import dense_image_warp 
+from models import interpolate_spline 
 
-#from tensorflow.python.framework import constant_op
-#from tensorflow.python.framework import ops
-#from tensorflow.python.ops import array_ops, gen_array_ops, math_ops
 
 def _torch_cast(np_array, type_to_use):
     if type_to_use == torch.int64:

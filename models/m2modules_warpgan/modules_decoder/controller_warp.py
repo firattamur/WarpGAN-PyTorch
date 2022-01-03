@@ -1,59 +1,119 @@
-class WarpController(nn.Module):
-    def __init__(self, batch_size, input_size_when_flatten, num_ldmark, scales):
-         
-        super().__init__()
-        
-        self.scales = scales
-        
-        self.flatten = nn.Flatten()
-        
-        self.fc1 = nn.Linear(input_size_when_flatten, 128, bias = True)
-        self.initialize_weights_with_he_biases_with_zero(self.fc1)
-        
-        self.ln1 = nn.LayerNorm(128)
-        
-        self.relu1 = nn.ReLU()
-        
-        self.fc2 = nn.Linear(128, num_ldmark * 2, bias = False)
-        self.init.trunc_normal_(self.fc2.weights)
-        self.fc2.bias.fill_(0.0)
-        
-        self.fc3 = nn.Linear(num_ldmark * 2, num_ldmark * 2, bias = False)
-        self.init.trunc_normal_(self.fc3.weights)
-        self.fc3.bias.fill_(0.0)
-      
-        
-    def initialize_weights_with_he_biases_with_zero(self, layer : nn.Module):
-        nn.init.kaiming_normal_(layer.weight)
-        layer.bias.data.fill_(0.0)
-    
-    def forward(self, x):
-        
-        x = self.flatten(x)
-        x = self.fc1(x)
-        x = self.ln1(x)
-        x = self.relu1(x)
-        
-        # BÖYLE BİR CONSTANT OLUŞTURMAK BURAYI BOZAR MI
-        ldmark_mean = (np.random.normal(0,50, (num_ldmark,2)) + np.array([[0.5*h,0.5*w]])).flatten()
-        ldmark_mean = torch.tensor(ldmark_mean, dtype=torch.float32)
+import torch
+import torch.nn as nn
+import torch.functional as tf
 
-        ldmark_pred = self.fc2(x)
-        ldmark_pred = ldmark_pred + ldmark_mean
-        #tf.identity ile aynı mı?
-        ldmark_pred = nn.Identity(ldmark_pred)
-        ldmark_diff = self.fc3(x)
-        ldmark_diff = nn.Identity(ldmark_diff)
-        # scales i yukarda bu şekilde dahil etmek problem mi
-        ldmark_diff = nn.Identity(torch.reshape(scales, (-1, 1)) * ldmark_diff)
+
+from warp_dense_image import sparse_image_warp
+
+
+class WarpController(nn.Module):
+    """
+    
+    Warp Controller network.
+    
+    """
+
+    def __init__(self, in_channels: int, in_batch: int, in_height: int, in_width: int, n_ldmark: int = 16):
+        """
         
-        src_pts = torch.reshape(ldmark_pred, (-1, num_ldmark, 2))
-        dst_pts = torch.reshape(ldmark_pred + ldmark_diff, (-1, num_ldmark, 2))
+        Warp Controller network.
+
+        :param in_channels      : number of channels
+        :param n_ldmark         : number of landmark points
+        :param in_batch         : batch size
+        :param in_height        : height of input image
+        :param in_width         : width of input image
+        :param initial          : initial channel number for convolution
         
-        diff_norm = torch.mean(torch.norm(src_pts - dst_pts, dim = (1, 2)))
-        images_transformed, dense_flow = sparse_image_warp(warp_input, src_pts, dst_pts, regularization_weight = 1e-6, num_boundary_points=0)
-        dense_flow = nn.Identity(dense_flow)
         
-        # böyle multiple şey döndürmek okay mi
-        return images_transformed, images_rendered, ldmark_pred, ldmark_diff
+        """
+
+        super(WarpController, self).__init__()
+
+        self.n_ldmark = n_ldmark
+        self.n_height = in_height
+        self.n_width  = in_width
+
+        # inp: (in_batch, in_channels, in_height, in_width)
+        # out: (in_batch, in_channels, in_height, in_width)
+        self.flatten = nn.Flatten()
+
+        in_features = in_channels * in_height * in_width
+
+        # inp: (in_batch, in_channels * in_height * in_width)
+        # out: (in_batch, 128)
+        self.linear1 = nn.Linear(in_features=in_features, out_features=128)
+    
+        # inp: (in_batch, 128)
+        # out: (in_batch, n_ldmark * 2)
+        self.linear2 = nn.Linear(in_features=in_features, out_features=n_ldmark * 2)
+
+        # inp: (in_batch, 128)
+        # out: (in_batch, n_ldmark * 2)
+        self.linear3 = nn.Linear(in_features=in_features, out_features=n_ldmark * 2)
+
+        # initialize weights of layers
+        self.initialize_weights()
+
         
+    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
+        """
+        
+        Forward function for Warp Controller.
+        
+        :param x : out of decoder controller
+            :shape: (in_batch, in_channels, in_height, in_width)
+
+        :param images_rendered : images rendered as output of warp decoder controller
+            :shape: (in_batch, 1)
+
+        :param scales   : scales values for input image
+            :shape: (in_batch, 1)
+
+        :return : out
+            :shape: (batch_size, 2, 1, 4 * k)
+
+        
+        """
+
+        # inp: (in_batch, in_channels, in_height, in_width)
+        # out: (in_batch, in_channels, in_height, in_width)
+        out = self.flatten(x)
+
+        # inp: (in_batch, in_channels * in_height * in_width)
+        # out: (in_batch, 128)
+        out = self.linear1(out)
+
+        # Control Points Prediction
+        
+        # shape: (1, self.n_ldmark * 2)
+        landmarks_mean = torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
+                         torch.tensor([0.5 * self.n_height, 0.5 * self.n_width]).flatten().type(dtype=torch.float32)
+        
+        # inp: (in_batch, 128)
+        # out: (in_batch, n_ldmark * 2)
+        landmarks_pred = self.linear2(out)
+
+        # shape: (in_batch, n_ldmark * 2)
+        landmarks_pred += landmarks_mean
+
+        # Displacements Prediction
+
+        # inp: (in_batch, 128)
+        # out: (in_batch, n_ldmark * 2)
+        landmarks_displacement = self.linear3(out)
+
+        # (in_batch, n_ldmark * 2) * (in_batch, 1)
+        # out: (in_batch, n_ldmark * 2)
+        landmarks_displacement *= self.scales
+
+        # shape: (in_batch, n_ldmark, 2)
+        landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2))
+        landmarks_dst = torch.reshape((landmarks_pred + landmarks_displacement).detach().clone(), (-1, self.n_ldmark, 2))
+
+        # shape: (1)
+        landmarks_norm = torch.mean(torch.norm(landmarks_src - landmarks_dst, dim=(1, 2)))
+
+        images_transformed, dense_flow = sparse_image_warp(images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
+
+        return images_transformed, landmarks_pred, landmarks_norm
