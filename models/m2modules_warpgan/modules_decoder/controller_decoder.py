@@ -186,6 +186,6 @@ class DecoderController(nn.Module):
 
         # inp: (in_batch, initial,   in_height*4, in_width*4)
         # out: (in_batch, initial,   in_height*4, in_width*4)
-        out  = self.tanh(out)
+        images_rendered  = self.tanh(out)
 
-        return out
+        return out, images_rendered

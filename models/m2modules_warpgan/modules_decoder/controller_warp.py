@@ -56,7 +56,7 @@ class WarpController(nn.Module):
         self.initialize_weights()
 
         
-    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor):
         """
         
         Forward function for Warp Controller.
@@ -65,7 +65,7 @@ class WarpController(nn.Module):
             :shape: (in_batch, in_channels, in_height, in_width)
 
         :param images_rendered : images rendered as output of warp decoder controller
-            :shape: (in_batch, 1)
+            :shape: (in_batch, initial(default=64), in_height, in_width)
 
         :param scales   : scales values for input image
             :shape: (in_batch, 1)
@@ -114,6 +114,17 @@ class WarpController(nn.Module):
         # shape: (1)
         landmarks_norm = torch.mean(torch.norm(landmarks_src - landmarks_dst, dim=(1, 2)))
 
+        # inp_images_rendered : (in_batch, initial(default=64), in_height, in_width)
+        # inp_landmarks_src   : (in_batch, n_ldmark, 2)
+        # inp_landmarks_dst   : (in_batch, n_ldmark, 2)
+        
+        # out_images_transformed: (in_batch, in_height, in_width, initial(default=64))
+        # out_dense_flow        : (in_batch, in_height, in_width, 2)
         images_transformed, dense_flow = sparse_image_warp(images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
+
+        # reshape outputs to torch order
+        # inp: (in_batch, in_height, in_width, initial(default=64))
+        # out: (in_batch, initial(default=64), in_height, in_width)
+        images_transformed = images_transformed.permute(0, 3, 1, 2)
 
         return images_transformed, landmarks_pred, landmarks_norm
