@@ -10,14 +10,14 @@ from .m2modules_warpgan.module_discriminator import Discriminator
 class WarpGAN(nn.Module):
     """
     
-    The Encoder Network. 
+    The WarpGAN Model.
     
     """
 
     def __init__(self, in_channels: int, n_classes: int, in_batch: int, in_height: int, in_width: int, style_size: int = 8, initial=64):
         """
         
-        Style Encoder network.
+        The WarpGAN Model.
 
         :param in_channels      : number of channels
         :param n_classes        : number of classes
