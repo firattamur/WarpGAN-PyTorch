@@ -25,6 +25,7 @@ def parse_arguments(argv):
 
     parser.add_argument("--aligned", help="Set true if the input face is already normalized",
                             action='store_true')
+    
 
     return parser.parse_args(argv)
 

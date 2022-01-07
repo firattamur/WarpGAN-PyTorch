@@ -14,7 +14,7 @@ class Decoder(nn.Module):
     
     """
 
-    def __init__(self, in_channels: int, n_classes: int, in_batch: int, in_height: int, in_width: int, initial=64):
+    def __init__(self, args):
         """
         
         Decoder Network
@@ -31,9 +31,9 @@ class Decoder(nn.Module):
         """
         super(Decoder).__init__()
 
-        self.controller_warp    = WarpController(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height)
-        self.controller_style   = StyleController(batch_size=in_batch)
-        self.controller_decoder = DecoderController(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, initial=initial)
+        self.controller_warp    = WarpController(args)
+        self.controller_style   = StyleController(args)
+        self.controller_decoder = DecoderController(args)
         
 
     def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor, texture_only: bool = False) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):

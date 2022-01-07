@@ -14,7 +14,7 @@ class StyleController(nn.Module):
     
     """
 
-    def __init__(self, batch_size: int, input_size: int = 8, k: int = 64):
+    def __init__(self, args):
         """
         
         Style Controller Network
@@ -25,9 +25,9 @@ class StyleController(nn.Module):
         """
         super(StyleController, self).__init__()
         
-        self.input_size = input_size
-        self.batch_size = batch_size
-        self.k = k
+        self.input_size = args.style_size
+        self.batch_size = args.in_batch
+        self.k = args.k
 
         # inp: (in_batch, input_size)
         # out: (in_batch, 128)
@@ -35,7 +35,7 @@ class StyleController(nn.Module):
             
             # inp: (in_batch, input_size)
             # out: (in_batch, 128)
-            nn.Linear(self.input_size, 128),
+            nn.Linear(args.style_size, 128),
 
             # inp: (in_batch, 128)
             # out: (in_batch, 128)
@@ -61,11 +61,11 @@ class StyleController(nn.Module):
 
         # inp: (in_batch, 128)
         # out: (in_batch, 4 * k)
-        self.linear_gamma = nn.Linear(128, 4 * self.k, bias = True)
+        self.linear_gamma = nn.Linear(128, 4 * args.k, bias = True)
         
         # inp: (in_batch, 128)
         # out: (in_batch, 4 * k)
-        self.linear_beta  = nn.Linear(128, 4 * self.k, bias = True)
+        self.linear_beta  = nn.Linear(128, 4 * args.k, bias = True)
 
         # initialize all weights for module
         self.initialize_weights()

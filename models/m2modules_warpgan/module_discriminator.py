@@ -12,7 +12,7 @@ class Discriminator(nn.Module):
     
     """
 
-    def __init__(self, in_channels: int, n_classes: int, in_batch: int, in_height: int, in_width: int, bottleneck_size: int = 512):
+    def __init__(self, args):
         """
         
         Discriminator network.
@@ -39,7 +39,7 @@ class Discriminator(nn.Module):
 
             # inp: (in_batch, in_channels, in_height,    in_width)
             # out: (in_batch, 32,          in_height/2,  in_width/2)
-            CustomConv2d(activation=nn.LeakyReLU, in_channels=in_channels, out_channels=32, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=args.in_channels, out_channels=32, kernel_size=4, stride=2),
 
             # inp: (in_batch, 32,          in_height/2,  in_width/2)
             # out: (in_batch, 64,          in_height/4,  in_width/4)
@@ -72,18 +72,18 @@ class Discriminator(nn.Module):
         # size of flatten tensor
         # dimension reduces to half after each conv layer that's why:
 
-        out_height = in_height / 32
-        out_width  = in_width  / 32
+        out_height = args.in_height / 32
+        out_width  = args.in_width  / 32
 
-        in_features = 512 * out_height * out_width * in_batch
+        in_features = 512 * out_height * out_width * args.in_batch
 
         # inp: (in_batch, 512 * in_height/32 * in_width/32)
         # out: (in_batch, 512)
-        self.linear1 = nn.Linear(in_features=in_features, out_features=bottleneck_size)
+        self.linear1 = nn.Linear(in_features=in_features, out_features=args.bottleneck_size)
 
         # inp: (in_batch, 512)
         # out: (in_batch, n_classes)
-        self.linear2 = nn.Linear(in_features=bottleneck_size, out_features=n_classes)
+        self.linear2 = nn.Linear(in_features=args.bottleneck_size, out_features=args.n_classes)
 
         # initalize all network weights
         self.initialize_weights()
