@@ -13,7 +13,7 @@ class WarpController(nn.Module):
     
     """
 
-    def __init__(self, in_channels: int, in_batch: int, in_height: int, in_width: int, n_ldmark: int = 16):
+    def __init__(self, args):
         """
         
         Warp Controller network.
@@ -30,15 +30,15 @@ class WarpController(nn.Module):
 
         super(WarpController, self).__init__()
 
-        self.n_ldmark = n_ldmark
-        self.n_height = in_height
-        self.n_width  = in_width
+        self.n_ldmark = args.n_ldmark
+        self.n_height = args.in_height
+        self.n_width  = args.in_width
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
         self.flatten = nn.Flatten()
 
-        in_features = in_channels * in_height * in_width
+        in_features = self.in_channels * self.in_height * self.in_width
 
         # inp: (in_batch, in_channels * in_height * in_width)
         # out: (in_batch, 128)
@@ -46,11 +46,11 @@ class WarpController(nn.Module):
     
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear2 = nn.Linear(in_features=in_features, out_features=n_ldmark * 2)
+        self.linear2 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
 
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear3 = nn.Linear(in_features=in_features, out_features=n_ldmark * 2)
+        self.linear3 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
 
         # initialize weights of layers
         self.initialize_weights()

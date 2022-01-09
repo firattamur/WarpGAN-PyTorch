@@ -14,7 +14,7 @@ class WarpGAN(nn.Module):
     
     """
 
-    def __init__(self, in_channels: int, n_classes: int, in_batch: int, in_height: int, in_width: int, style_size: int = 8, initial=64):
+    def __init__(self, args):
         """
         
         The WarpGAN Model.
@@ -29,9 +29,9 @@ class WarpGAN(nn.Module):
         """
         super(WarpGAN, self).__init__()
 
-        self.encoder = Encoder(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width, style_size=style_size, initial=initial)
-        self.decoder = Decoder(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width, initial=initial)
-        self.discriminator = Discriminator(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width)
+        self.encoder = Encoder(args)
+        self.decoder = Decoder(args)
+        self.discriminator = Discriminator(args)
 
 
     def forward(self, input: dict) -> tuple(torch.Tensor, torch.Tensor):

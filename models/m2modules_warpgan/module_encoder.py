@@ -13,7 +13,7 @@ class Encoder(nn.Module):
     
     """
 
-    def __init__(self, in_channels: int, n_classes: int, in_batch: int, in_height: int, in_width: int, style_size: int = 8, initial=64):
+    def __init__(self, args):
         """
         
         Style Encoder network.
@@ -29,10 +29,10 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
 
         # content encoder
-        self.content_encoder = ContentEncoder(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width, style_size=style_size, initial=initial)
+        self.content_encoder = ContentEncoder(args)
 
         # style encoder
-        self.style_encoder   = StyleEncoder(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width, style_size=style_size, initial=initial)
+        self.style_encoder   = StyleEncoder(args)
 
 
     def forward(self, x: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor):
