@@ -4,6 +4,8 @@ import torch.functional as tf
 
 
 class CustomConv2d(nn.Module):
+
+
     def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
         """
 
@@ -22,6 +24,8 @@ class CustomConv2d(nn.Module):
         self.conv_block = nn.Sequential(
             nn.Conv2d(**kwargs, padding="valid"), activation(inplace=True)
         )
+
+        self.initialize_weights()
 
     def forward(self, x) -> torch.Tensor:
         """
@@ -60,3 +64,19 @@ class CustomConv2d(nn.Module):
             return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="constant")
 
         raise ValueError(f"{pad_mode} must be one of ['reflect', 'zero']!")
+
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)

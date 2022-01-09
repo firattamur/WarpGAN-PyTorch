@@ -4,6 +4,7 @@ import torch.nn as nn
 
 class CustomInstanceNorm2d(nn.Module):
 
+
     def __init__(self, num_features: int):
         """
 
@@ -14,7 +15,7 @@ class CustomInstanceNorm2d(nn.Module):
         """
         super(CustomInstanceNorm2d, self).__init__()
 
-        self.instance_norm = nn.InstanceNorm2d(num_features)
+        self.instance_norm = nn.InstanceNorm2d(num_features, affine=True)
 
 
     def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> torch.Tensor:

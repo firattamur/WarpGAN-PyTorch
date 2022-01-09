@@ -121,11 +121,14 @@ class ContentEncoder(nn.Module):
         
         )
 
+        self.initialize_weights()
+
         
     def forward(self, x) -> torch.Tensor:
         """
         
         Forward function for Discriminator.
+
         :param x: input image
             :shape: (in_batch, in_height, in_width, in_channels)
 
@@ -153,4 +156,18 @@ class ContentEncoder(nn.Module):
         return out
         
         
+    def initialize_weights(self) -> None:
+        """
         
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)
+
