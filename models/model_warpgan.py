@@ -56,11 +56,13 @@ class WarpGAN(nn.Module):
         :return : output dict contains required inputs for loss modules
             :shape: {
 
-                patch_logits_A: (in_batch * in_height/32 * in_width/32, 3)
-                patch_logits_B: (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_A : (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_B : (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_BA: (in_batch * in_height/32 * in_width/32, 3)
 
                 logits_A      : (in_batch, n_classes)
                 logits_B      : (in_batch, n_classes)
+                logits_BA     : (in_batch, n_classes)
 
                 rendered_AA   : (in_batch, in_channels, in_height, in_width)
                 rendered_BB   : (in_batch, in_channels, in_height, in_width)
@@ -107,11 +109,13 @@ class WarpGAN(nn.Module):
 
             # to calculate Patch Advesarial loss for deform_BA
 
-            "patch_logits_A": patch_logits_A,
-            "patch_logits_B": patch_logits_B,
+            "patch_logits_A" : patch_logits_A,
+            "patch_logits_B" : patch_logits_B,
+            "patch_logits_BA": patch_logits_BA,
 
-            "logits_A": logits_A,
-            "logits_B": logits_B,
+            "logits_A" : logits_A,
+            "logits_B" : logits_B,
+            "logits_BA": logits_BA,
 
             # to calculate identity loss
 
