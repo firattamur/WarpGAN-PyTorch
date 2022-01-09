@@ -1,4 +1,5 @@
 import torch
+import typing
 import torch.nn as nn
 
 
@@ -34,7 +35,7 @@ class WarpGAN(nn.Module):
         self.discriminator = Discriminator(args)
 
 
-    def forward(self, input: dict) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, input: typing.Dict[str, torch.Tensor]) -> tuple(torch.Tensor, torch.Tensor):
         """
         
         Forward function for Discriminator.
