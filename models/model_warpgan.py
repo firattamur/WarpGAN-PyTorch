@@ -30,6 +30,8 @@ class WarpGAN(nn.Module):
         """
         super(WarpGAN, self).__init__()
 
+        self.evaluation = args.evaluation
+
         self.encoder = Encoder(args)
         self.decoder = Decoder(args)
         self.discriminator = Discriminator(args)
@@ -71,6 +73,17 @@ class WarpGAN(nn.Module):
             }
             
         """
+
+        # model is in evaluation mode just return caricature
+        if self.evaluation:
+
+            images_B = input["images_B"]
+            scales_B = input["scales_B"] 
+
+            encoded_B, styles_B  = self.encoder(images_B)
+            deformed_BA, _, _, _ = self.decoder(encoded_B, scales_B, None)
+
+            return deformed_BA
 
         images_A = input["images_A"]
         images_B = input["images_B"]
