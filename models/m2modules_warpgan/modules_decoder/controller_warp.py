@@ -128,3 +128,19 @@ class WarpController(nn.Module):
         images_transformed = images_transformed.permute(0, 3, 1, 2)
 
         return images_transformed, landmarks_pred, landmarks_norm
+
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Linear):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)

@@ -189,3 +189,19 @@ class DecoderController(nn.Module):
         images_rendered  = self.tanh(out)
 
         return out, images_rendered
+
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)

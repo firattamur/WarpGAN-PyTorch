@@ -110,3 +110,18 @@ class StyleController(nn.Module):
         
         return beta, gamma
         
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Linear):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)

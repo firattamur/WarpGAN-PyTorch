@@ -34,9 +34,6 @@ class Encoder(nn.Module):
         # style encoder
         self.style_encoder   = StyleEncoder(in_channels=in_channels, n_classes=n_classes, in_batch=in_batch, in_height=in_height, in_width=in_width, style_size=style_size, initial=initial)
 
-        # initalize weights of module
-        self.initialize_weights()
-
 
     def forward(self, x: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor):
         """
@@ -65,27 +62,3 @@ class Encoder(nn.Module):
 
         return content, style
 
-
-    def initialize_weights(self) -> None:
-        """
-        
-        Initialize weights of Endoder modules.
-
-        :param modules: list of modules to initialize weights
-        
-        """
-
-        for module in self.modules():
-
-            if isinstance(module, nn.Conv2d):
-                nn.init.kaiming_uniform_(module.weight)
-                nn.init.zeros_(module.bias)
-
-            if isinstance(module, nn.ConvTranspose2d):
-                nn.init.kaiming_uniform_(module.weight)
-                nn.init.zeros_(module.bias)
-
-            if isinstance(module, nn.Linear):
-                nn.init.kaiming_uniform_(module.weight)
-                nn.init.zeros_(module.bias)
-    

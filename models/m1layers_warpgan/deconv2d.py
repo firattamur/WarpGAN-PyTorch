@@ -4,6 +4,8 @@ import torch.functional as tf
 
 
 class CustomDeConv2d(nn.Module):
+
+
     def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
         """
 
@@ -23,6 +25,9 @@ class CustomDeConv2d(nn.Module):
             nn.ConvTranspose2d(**kwargs, padding="valid"), activation(inplace=True)
         )
 
+        self.initialize_weights()
+
+
     def forward(self, x) -> torch.Tensor:
         """
 
@@ -37,7 +42,9 @@ class CustomDeConv2d(nn.Module):
         """
 
         padded = self.padding(x, pad=self.pad)
+
         return self.conv_block(padded)
+
 
     def padding(self, x: torch.Tensor, pad: int, pad_mode="reflect") -> torch.Tensor:
         """
@@ -62,3 +69,19 @@ class CustomDeConv2d(nn.Module):
             )
 
         raise ValueError(f"{pad_mode} must be one of ['reflect', 'zero']!")
+
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.ConvTranspose2d):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)
