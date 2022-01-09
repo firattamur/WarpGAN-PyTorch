@@ -44,33 +44,40 @@ class ContentEncoder(nn.Module):
         """
         super(ContentEncoder, self).__init__()
 
+        # unpack input parameters from args
+        self.initial      = args.initial
+        self.in_channels  = args.in_channels
+        self.out_channels = args.out_channels
+        self.in_width     = args.in_width
+        self.in_height    = args.in_height
+
         # inp: (in_batch, in_channels, in_height,   in_width)
         # out: (in_batch, initial * 4, in_height/4, in_width/4)
         self.convs = nn.Sequential(
 
             # inp: (in_batch, in_channels, in_height, in_width)
             # out: (in_batch, initial,     in_height, in_width)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.in_channels, out_channels=args.initial, kernel_size=7, stride=1, pad=3),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.initial, kernel_size=7, stride=1, pad=3),
 
             # inp: (in_batch, initial, in_height, in_width)
             # out: (in_batch, initial, in_height, in_width)
-            nn.InstanceNorm2d(args.initial),
+            nn.InstanceNorm2d(self.initial),
 
             # inp: (in_batch, initial,   in_height,   in_width)
             # out: (in_batch, initial*2, in_height/2, in_width/2)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial, out_channels=args.initial * 2, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.initial, out_channels=self.initial * 2, kernel_size=4, stride=2),
 
             # inp: (in_batch, initial*2, in_height/2, in_width/2)
             # out: (in_batch, initial*2, in_height/2, in_width/2)
-            nn.InstanceNorm2d(args.initial * 2),
+            nn.InstanceNorm2d(self.initial * 2),
 
             # inp: (in_batch, initial*2, in_height/2, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 2, out_channels=args.initial * 4, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.initial * 2, out_channels=self.initial * 4, kernel_size=4, stride=2),
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            nn.InstanceNorm2d(args.initial * 4)
+            nn.InstanceNorm2d(self.initial * 4)
 
         )
 
@@ -89,11 +96,11 @@ class ContentEncoder(nn.Module):
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1),
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1, padding=1),
         
         )
 
@@ -101,11 +108,11 @@ class ContentEncoder(nn.Module):
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1),
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1, padding=1),
         
         )
 
@@ -113,11 +120,11 @@ class ContentEncoder(nn.Module):
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1),
 
             # inp: (in_batch, initial*4, in_height/4, in_width/4)
             # out: (in_batch, initial*4, in_height/4, in_width/4)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.initial * 4, out_channels=self.initial * 4, kernel_size=3, stride=1, padding=1),
         
         )
 

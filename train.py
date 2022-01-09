@@ -14,11 +14,9 @@ def parse_arguments(argv):
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("config_file", help="The path to the training configuration file",
-                        type=str)
+    parser.add_argument("config_file", help="The path to the training configuration file", type=str)
     
-    parser.add_argument("--name", help="Rename the log dir",
-                        type=str, default=None)
+    parser.add_argument("--name", help="Rename the log dir", type=str, default=None)
     
     parser.add_argument("--in_channels", help="Initial channels in the input images", type = int, default = 3)
     

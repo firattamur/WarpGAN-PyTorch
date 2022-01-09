@@ -53,23 +53,28 @@ class DecoderController(nn.Module):
         """
         super(DecoderController, self).__init__()
 
+        # unpack input parameters from args
+        self.in_channels  = args.initial   * 4
+        self.in_width     = args.in_width  / 4
+        self.in_height    = args.in_height / 4
+
         self.res1 = CustomSequential(
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1),
             
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1, padding=1),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
         )
 
@@ -77,19 +82,19 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1, padding=1),
         
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
         )
 
@@ -97,19 +102,19 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomConv2d(activation=nn.ReLU, in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            nn.Conv2d(in_channels=args.initial * 4, out_channels=args.initial * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=self.in_channels, out_channels=self.in_channels, kernel_size=3, stride=1, padding=1),
         
             # inp: (in_batch, initial*4, in_height, in_width)
             # out: (in_batch, initial*4, in_height, in_width)
-            CustomInstanceNorm2d(args.initial*4),
+            CustomInstanceNorm2d(self.in_channels),
 
         )
 
@@ -123,11 +128,11 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=args.initial * 2, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels / 2, kernel_size=3, stride=1),
             
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            nn.InstanceNorm2d(args.initial*2),
+            nn.InstanceNorm2d(self.in_channels / 2),
 
             # inp: (in_batch, initial*2, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*4, in_width*4)
@@ -135,11 +140,11 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*2, in_height*4, in_width*4)
             # out: (in_batch, initial,   in_height*4, in_width*4)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=args.initial, out_channels=args.initial * 4, kernel_size=3, stride=1),
+            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels / 2, out_channels=self.in_channels / 4, kernel_size=3, stride=1),
             
             # inp: (in_batch, initial, in_height*4, in_width*4)
             # out: (in_batch, initial, in_height*4, in_width*4)
-            nn.InstanceNorm2d(args.initial*2)
+            nn.InstanceNorm2d(self.in_channels / 4)
 
         )
 
