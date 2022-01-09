@@ -35,11 +35,19 @@ class Discriminator(nn.Module):
 
         """
 
+        # unpack input parameters from args
+        self.in_channels     = args.in_channels
+        self.out_channels    = args.n_classes
+        self.in_batch        = args.in_batch
+        self.in_width        = args.in_width
+        self.in_height       = args.in_height
+        self.bottleneck_size = args.bottleneck_size
+
         self.convs = nn.Sequential(
 
             # inp: (in_batch, in_channels, in_height,    in_width)
             # out: (in_batch, 32,          in_height/2,  in_width/2)
-            CustomConv2d(activation=nn.LeakyReLU, in_channels=args.in_channels, out_channels=32, kernel_size=4, stride=2),
+            CustomConv2d(activation=nn.LeakyReLU, in_channels=self.in_channels, out_channels=32, kernel_size=4, stride=2),
 
             # inp: (in_batch, 32,          in_height/2,  in_width/2)
             # out: (in_batch, 64,          in_height/4,  in_width/4)
@@ -72,18 +80,18 @@ class Discriminator(nn.Module):
         # size of flatten tensor
         # dimension reduces to half after each conv layer that's why:
 
-        out_height = args.in_height / 32
-        out_width  = args.in_width  / 32
+        out_height = self.in_height / 32
+        out_width  = self.in_width  / 32
 
-        in_features = 512 * out_height * out_width * args.in_batch
+        in_features = 512 * out_height * out_width * self.in_batch
 
         # inp: (in_batch, 512 * in_height/32 * in_width/32)
         # out: (in_batch, 512)
-        self.linear1 = nn.Linear(in_features=in_features, out_features=args.bottleneck_size)
+        self.linear1 = nn.Linear(in_features=in_features, out_features=self.bottleneck_size)
 
         # inp: (in_batch, 512)
         # out: (in_batch, n_classes)
-        self.linear2 = nn.Linear(in_features=args.bottleneck_size, out_features=args.n_classes)
+        self.linear2 = nn.Linear(in_features=self.bottleneck_size, out_features=self.out_channels)
 
         # initalize all network weights
         self.initialize_weights()
