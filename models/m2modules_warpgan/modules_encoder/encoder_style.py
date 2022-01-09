@@ -84,7 +84,10 @@ class StyleEncoder(nn.Module):
         # out: (in_batch, style_size)
         self.linear = nn.Linear(in_features=in_features, out_features=style_size)
 
-        
+
+        self.initialize_weights()    
+
+
     def forward(self, x) -> torch.Tensor:
         """
         
@@ -120,6 +123,26 @@ class StyleEncoder(nn.Module):
         # here an answer: https://github.com/pytorch/pytorch/issues/9160#issuecomment-402494129
         
         return style_vector
-        
 
+
+    def initialize_weights(self) -> None:
+        """
+        
+        Initialize weights of modules.
+        
+        """
+
+        for module in self.modules():
+
+            if isinstance(module, nn.Conv2d):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)
+
+            if isinstance(module, nn.Linear):
+                nn.init.kaiming_uniform_(module.weight)
+
+                if module.bias:
+                    nn.init.zeros_(module.bias)
 
