@@ -125,6 +125,6 @@ dmypy.json
 
 # dataset folder
 datasets/WebCaricature
-
+datasets/WebCaricatureAligned256
 
 
