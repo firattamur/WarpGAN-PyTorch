@@ -70,9 +70,9 @@ class WebCaricatureDataset(Dataset):
         self.dataset_path           : str = os.path.join(self.root, "WebCaricature")
         
         if is_train:
-            self.index_txt_path         : str = os.path.join(self.root, "index_txt/train.txt")
+            self.index_txt_path     : str = os.path.join(self.root, "index_txt/train.txt")
         else:
-            self.index_txt_path         : str = os.path.join(self.root, "index_txt/train.txt")
+            self.index_txt_path     : str = os.path.join(self.root, "index_txt/train.txt")
         
         self.original_images_path   : str = os.path.join(self.dataset_path, self.prefix)
 
