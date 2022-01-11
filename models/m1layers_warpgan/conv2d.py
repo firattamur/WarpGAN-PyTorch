@@ -28,6 +28,7 @@ class CustomConv2d(nn.Module):
 
         self.initialize_weights()
 
+
     def forward(self, x) -> torch.Tensor:
         """
 
@@ -42,7 +43,9 @@ class CustomConv2d(nn.Module):
         """
 
         padded = self.padding(x, pad=self.pad)
+
         return self.conv_block(padded)
+
 
     def padding(self, x: torch.Tensor, pad: int, pad_mode="reflect") -> torch.Tensor:
         """
@@ -58,11 +61,11 @@ class CustomConv2d(nn.Module):
 
         """
 
-        if pad_mode == "reflect":
-            return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="reflect")
-
         if pad_mode == "zero":
-            return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="constant")
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="constant")
+
+        if pad_mode == "reflect":
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="reflect")
 
         raise ValueError(f"{pad_mode} must be one of ['reflect', 'zero']!")
 

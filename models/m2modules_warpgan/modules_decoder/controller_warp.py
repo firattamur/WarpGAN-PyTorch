@@ -30,9 +30,9 @@ class WarpController(nn.Module):
         super().__init__()
 
         self.n_ldmark    = args.n_ldmark
-        self.in_height    = args.in_height
-        self.in_width     = args.in_width
-        self.in_channels = args.in_channels
+        self.in_height   = args.in_height
+        self.in_width    = args.in_width
+        self.in_channels = args.initial
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
@@ -42,15 +42,15 @@ class WarpController(nn.Module):
 
         # inp: (in_batch, in_channels * in_height * in_width)
         # out: (in_batch, 128)
-        self.linear1 = nn.Linear(in_features=in_features, out_features=128)
+        self.linear1 = nn.Linear(in_features=in_features,       out_features=128)
     
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear2 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
+        self.linear2 = nn.Linear(in_features=128,               out_features=self.n_ldmark * 2)
 
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear3 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
+        self.linear3 = nn.Linear(in_features=self.n_ldmark * 2, out_features=self.n_ldmark * 2)
 
         # initialize weights of layers
         self.initialize_weights()

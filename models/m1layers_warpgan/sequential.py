@@ -36,8 +36,8 @@ class CustomSequential(nn.Sequential):
         for module in self._modules.values():
 
             if isinstance(module, CustomInstanceNorm2d):
-                inputs = tuple(module(*inputs),   inputs[1], inputs[2])
+                x = (module(*x),   x[1], x[2])
             else:
-                inputs = tuple(module(inputs[0]), inputs[1], inputs[2])
+                x = (module(x[0]), x[1], x[2])
 
-        return inputs 
+        return x 

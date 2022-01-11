@@ -128,7 +128,7 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels // 2, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels,      out_channels=self.in_channels // 2, kernel_size=5, stride=1, pad=2),
             
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
@@ -140,7 +140,7 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*2, in_height*4, in_width*4)
             # out: (in_batch, initial,   in_height*4, in_width*4)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels // 2, out_channels=self.in_channels // 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels // 2, out_channels=self.in_channels // 4, kernel_size=5, stride=1, pad=2),
             
             # inp: (in_batch, initial, in_height*4, in_width*4)
             # out: (in_batch, initial, in_height*4, in_width*4)
@@ -148,10 +148,17 @@ class DecoderController(nn.Module):
 
         )
 
+        # inp: (in_batch, initial,   in_height*4, in_width*4)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
+        self.conv = nn.Conv2d(in_channels=self.in_channels//4, out_channels=3, kernel_size=7, stride=1, padding=3)
+        # nn.init.zeros_(self.conv.weight)
+
         # inp: (in_batch, initial, in_height*4, in_width*4)
         # out: (in_batch, initial, in_height*4, in_width*4)
         self.tanh = nn.Tanh()
 
+        # initalize layer weights
+        self.initialize_weights()
 
     def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> tuple:
         """
@@ -179,18 +186,22 @@ class DecoderController(nn.Module):
 
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res2((out, gamma, beta))
+        out += self.res2(out)
         
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res3((out, gamma, beta))
+        out += self.res3(out)
 
         # inp: (in_batch, initial*4, in_height,   in_width)
         # out: (in_batch, initial,   in_height*4, in_width*4)
-        out  = self.deconvs(out)
+        out  = self.deconvs(out[0])
 
         # inp: (in_batch, initial,   in_height*4, in_width*4)
-        # out: (in_batch, initial,   in_height*4, in_width*4)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
+        out = self.conv(out)
+
+        # inp: (in_batch, 3,         in_height*4, in_width*4)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
         images_rendered  = self.tanh(out)
 
         return out, images_rendered

@@ -82,7 +82,7 @@ class StyleEncoder(nn.Module):
 
         # inp: (in_batch, initial*4, in_height/4, in_width/4)
         # out: (in_batch, initial*4, 1,           1)
-        self.avg_pool2d = nn.AvgPool2d(kernel_size=(out_height, out_width), stride=2, padding='valid')
+        self.avg_pool2d = nn.AvgPool2d(kernel_size=(out_height, out_width), stride=2)
 
         # inp: (in_batch, initial*4, 1,           1)
         # out: (in_batch, initial*4 * 1 * 1)

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.functional as tf
 
-from ..m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
 
 
 class Discriminator(nn.Module):
@@ -111,6 +111,9 @@ class Discriminator(nn.Module):
             :shape        logits: (in_batch, n_classes)
         
         """
+
+        import pdb
+        pdb.set_trace()
 
         # inp: (in_batch, in_channels, in_height,     in_width)
         # out: (in_batch, 512,         in_height/32,  in_width/32)

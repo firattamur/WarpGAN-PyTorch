@@ -22,7 +22,7 @@ class CustomDeConv2d(nn.Module):
         self.pad = pad
 
         self.conv_block = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding="valid"),
+            nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride),
             activation(inplace=True)
         )
 
@@ -62,12 +62,10 @@ class CustomDeConv2d(nn.Module):
         """
 
         if pad_mode == "reflect":
-            return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="reflect")
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="reflect")
 
         if pad_mode == "zero":
-            return tf.pad(
-                input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="constant"
-            )
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="constant")
 
         raise ValueError(f"{pad_mode} must be one of ['reflect', 'zero']!")
 
