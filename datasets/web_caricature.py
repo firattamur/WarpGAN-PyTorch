@@ -149,14 +149,14 @@ class WebCaricatureDataset(Dataset):
 
         return {
 
-            "photo_images": self._to_tensor(photo_image),
-            "caric_images": self._to_tensor(caric_image),
+            "images_photo": self._to_tensor(photo_image),
+            "images_caric": self._to_tensor(caric_image),
             
-            "photo_labels": photo_labels,
-            "caric_labels": caric_labels,
+            "labels_photo": photo_labels,
+            "labels_caric": caric_labels,
 
-            "photo_scales": 1,
-            "caric_scales": 1
+            "scales_photo": 1,
+            "scales_caric": 1
 
         }
 

@@ -43,76 +43,76 @@ class WarpGANGenerator(nn.Module):
         :param input: input dict contains input images, labels and scales
             :shape: {
 
-                images_A: (in_batch, in_channels, in_height, in_width)
-                images_B: (in_batch, in_channels, in_height, in_width)
+                images_caric: (in_batch, in_channels, in_height, in_width)
+                images_photo: (in_batch, in_channels, in_height, in_width)
 
-                labels_A: (in_batch, 1)
-                labels_B: (in_batch, 1)
+                labels_caric: (in_batch, 1)
+                labels_photo: (in_batch, 1)
 
-                scales_A: (in_batch, 1)
-                scales_B: (in_batch, 1)
+                scales_caric: (in_batch, 1)
+                scales_photo: (in_batch, 1)
 
             }
 
         :return : output dict contains required inputs for loss modules
             :shape: {
 
-                deformed_BA   : (in_batch, in_channels, in_height, in_width)
-                rendered_BA   : (in_batch, in_channels, in_height, in_width)
+                generated_caric   : (in_batch, in_channels, in_height, in_width)
+                rendered_generated_caric   : (in_batch, in_channels, in_height, in_width)
 
                 landmark_pred : (in_batch, n_ldmark * 2)
                 landmark_norm : (1)
 
-                rendered_AA   : (in_batch, in_channels, in_height, in_width)
-                rendered_BB   : (in_batch, in_channels, in_height, in_width)
+                rendered_caric   : (in_batch, in_channels, in_height, in_width)
+                rendered_photo   : (in_batch, in_channels, in_height, in_width)
 
             }
             
         """
 
         # model is in evaluation mode just return caricature
-        if self.is_train:
+        if not self.is_train:
 
-            images_B = input["images_B"]
-            scales_B = input["scales_B"] 
+            images_photo = input["images_photo"]
+            scales_photo = input["scales_photo"] 
 
-            encoded_B, styles_B  = self.encoder(images_B)
-            deformed_BA, _, _, _ = self.decoder(encoded_B, scales_B, None)
+            encoded_photo, styles_B = self.encoder(images_photo)
+            generated_caric, _, _, _    = self.decoder(encoded_photo, scales_photo, None)
 
-            return deformed_BA
+            return generated_caric
 
-        images_A = input["images_A"]
-        images_B = input["images_B"]
+        images_caric = input["images_caric"]
+        images_photo = input["images_photo"]
 
-        labels_A = input["labels_A"]
-        labels_B = input["labels_B"]
+        labels_caric = input["labels_caric"]
+        labels_photo = input["labels_photo"]
 
-        scales_A = input["scales_A"]
-        scales_B = input["scales_B"] 
+        scales_caric = input["scales_caric"]
+        scales_photo = input["scales_photo"] 
 
         # --------------------------------------------------------
         # Module Encoder
         # --------------------------------------------------------
 
-        encoded_A, styles_A = self.encoder(images_A)
-        encoded_B, styles_B = self.encoder(images_B)
+        encoded_caric, styles_A = self.encoder(images_caric)
+        encoded_photo, styles_B = self.encoder(images_photo)
 
         # --------------------------------------------------------
         # Module Decoder
         # --------------------------------------------------------
 
-        deformed_BA, rendered_BA, landmark_pred, landmark_norm = self.decoder(encoded_B, scales_B, None)
+        generated_caric, rendered_generated_caric, landmark_pred, landmark_norm = self.decoder(encoded_photo, scales_photo, None)
         
-        rendered_AA = self.decoder(encoded_A, scales_A, styles_A, texture_only=True)
-        rendered_BB = self.decoder(encoded_B, scales_B, styles_B, texture_only=True)
+        rendered_caric = self.decoder(encoded_caric, scales_caric, styles_A, texture_only=True)
+        rendered_photo = self.decoder(encoded_photo, scales_photo, styles_B, texture_only=True)
 
         return {
 
-            "rendered_AA" : rendered_AA,
-            "rendered_BB" : rendered_BB,
+            "rendered_caric" : rendered_caric,
+            "rendered_photo" : rendered_photo,
 
-            "deformed_BA" : deformed_BA,
-            "rendered_BA" : rendered_BA,
+            "generated_caric" : generated_caric,
+            "rendered_generated_caric" : rendered_generated_caric,
 
             "landmark_pred" : landmark_pred,
             "landmark_norm" : landmark_norm,
@@ -154,58 +154,58 @@ class WarpGANDiscriminator(nn.Module):
         :param input: input dict contains input images, labels and scales
             :shape: {
 
-                images_A: (in_batch, in_channels, in_height, in_width)
-                images_B: (in_batch, in_channels, in_height, in_width)
+                images_caric: (in_batch, in_channels, in_height, in_width)
+                images_photo: (in_batch, in_channels, in_height, in_width)
 
-                labels_A: (in_batch, 1)
-                labels_B: (in_batch, 1)
+                labels_caric: (in_batch, 1)
+                labels_photo: (in_batch, 1)
 
-                scales_A: (in_batch, 1)
-                scales_B: (in_batch, 1)
+                scales_caric: (in_batch, 1)
+                scales_photo: (in_batch, 1)
 
             }
 
         :return : output dict contains required inputs for loss modules
             :shape: {
 
-                logits_A      : (in_batch, n_classes)
-                logits_B      : (in_batch, n_classes)
-                logits_BA     : (in_batch, n_classes)
+                logits_caric      : (in_batch, n_classes)
+                logits_photo      : (in_batch, n_classes)
+                logits_generated_caric     : (in_batch, n_classes)
 
-                patch_logits_A : (in_batch * in_height/32 * in_width/32, 3)
-                patch_logits_B : (in_batch * in_height/32 * in_width/32, 3)
-                patch_logits_BA: (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_caric : (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_photo : (in_batch * in_height/32 * in_width/32, 3)
+                patch_logits_generated_caric: (in_batch * in_height/32 * in_width/32, 3)
 
             }
             
         """
 
-        images_A = input["images_A"]
-        images_B = input["images_B"]
+        images_caric = input["images_caric"]
+        images_photo = input["images_photo"]
 
-        labels_A = input["labels_A"]
-        labels_B = input["labels_B"]
+        labels_caric = input["labels_caric"]
+        labels_photo = input["labels_photo"]
 
-        scales_A = input["scales_A"]
-        scales_B = input["scales_B"] 
+        scales_caric = input["scales_caric"]
+        scales_photo = input["scales_photo"] 
 
         # --------------------------------------------------------
         # Module Discriminator
         # --------------------------------------------------------
 
-        patch_logits_A, logits_A   = self.discriminator(images_A)
-        patch_logits_B, logits_B   = self.discriminator(images_B)
+        patch_logits_caric, logits_caric   = self.discriminator(images_caric)
+        patch_logits_photo, logits_photo   = self.discriminator(images_photo)
 
-        patch_logits_BA, logits_BA = self.discriminator(deformed_BA)
+        patch_logits_generated_caric, logits_generated_caric = self.discriminator(generated_caric)
 
         return {
 
-            "logits_A" : logits_A,
-            "logits_B" : logits_B,
-            "logits_BA": logits_BA,
+            "logits_caric" : logits_caric,
+            "logits_photo" : logits_photo,
+            "logits_generated_caric": logits_generated_caric,
 
-            "patch_logits_A" : patch_logits_A,
-            "patch_logits_B" : patch_logits_B,
-            "patch_logits_BA": patch_logits_BA,
+            "patch_logits_caric" : patch_logits_caric,
+            "patch_logits_photo" : patch_logits_photo,
+            "patch_logits_generated_caric": patch_logits_generated_caric,
 
         }

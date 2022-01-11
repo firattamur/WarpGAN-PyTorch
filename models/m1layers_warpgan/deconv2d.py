@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.functional as tf
+import torch.nn.functional as tf
 
 
 class CustomDeConv2d(nn.Module):
