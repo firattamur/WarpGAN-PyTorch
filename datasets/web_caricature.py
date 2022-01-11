@@ -98,7 +98,7 @@ class WebCaricatureDataset(Dataset):
         self.n_classes  = len(self.classes)
 
         # set photos and caricatures for each person class
-        self.p_indices = self._separate_photos_caricatures_for_classes()
+        self.p_indices  = self._separate_photos_caricatures_for_classes()
 
         # imageio numpy array to tensor
         self._to_tensor = vision_transforms.Compose(
@@ -140,12 +140,24 @@ class WebCaricatureDataset(Dataset):
         photo_image = io.imread(photo_path, pilmode="RGB")
         caric_image = io.imread(caric_path, pilmode="RGB")
 
+        # photo and caric labels
+        photo_labels = self.labels[photo_index]
+        caric_labels = self.labels[caric_index]
+
         # io reads image in order (h, w, c)
         # lets convert to (c, h, w)
 
         return {
-            "photo": self._to_tensor(photo_image),
-            "caric": self._to_tensor(caric_image),
+
+            "photo_images": self._to_tensor(photo_image),
+            "caric_images": self._to_tensor(caric_image),
+            
+            "photo_labels": photo_labels,
+            "caric_labels": caric_labels,
+
+            "photo_scales": 1,
+            "caric_scales": 1
+
         }
 
     def _get_paths(self) -> list:
