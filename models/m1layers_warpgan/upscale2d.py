@@ -16,7 +16,7 @@ class CustomUpScale2d(nn.Module):
         :param factor: scaling factor.
 
         """
-        super(CustomUpScale2d, self).__init__()
+        super().__init__()
 
         assert factor >= 1, "Scaling factor must be greater than 0!"
 

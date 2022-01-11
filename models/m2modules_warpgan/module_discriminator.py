@@ -34,6 +34,7 @@ class Discriminator(nn.Module):
         Dout = ( Din + 2 * pad - dilation * ( kernel_size - 1 ) - 1 ) / ( stride ) + 1
 
         """
+        super().__init__()
 
         # unpack input parameters from args
         self.in_channels     = args.in_channels
@@ -80,8 +81,8 @@ class Discriminator(nn.Module):
         # size of flatten tensor
         # dimension reduces to half after each conv layer that's why:
 
-        out_height = self.in_height / 32
-        out_width  = self.in_width  / 32
+        out_height = self.in_height // 32
+        out_width  = self.in_width  // 32
 
         in_features = 512 * out_height * out_width * self.in_batch
 

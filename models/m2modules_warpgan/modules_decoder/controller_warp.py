@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.functional as tf
 
 
-from warp_dense_image import sparse_image_warp
+from models.m2modules_warpgan.modules_decoder.warp_sparse_image import sparse_image_warp
 
 
 class WarpController(nn.Module):
@@ -27,12 +27,12 @@ class WarpController(nn.Module):
         
         
         """
+        super().__init__()
 
-        super(WarpController, self).__init__()
-
-        self.n_ldmark = args.n_ldmark
-        self.n_height = args.in_height
-        self.n_width  = args.in_width
+        self.n_ldmark    = args.n_ldmark
+        self.in_height    = args.in_height
+        self.in_width     = args.in_width
+        self.in_channels = args.in_channels
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
@@ -56,7 +56,7 @@ class WarpController(nn.Module):
         self.initialize_weights()
 
         
-    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple:
         """
         
         Forward function for Warp Controller.
@@ -142,5 +142,5 @@ class WarpController(nn.Module):
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

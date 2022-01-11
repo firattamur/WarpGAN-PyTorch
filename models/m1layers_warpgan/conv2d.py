@@ -6,7 +6,7 @@ import torch.functional as tf
 class CustomConv2d(nn.Module):
 
 
-    def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
+    def __init__(self, activation: nn.Module, in_channels: int, out_channels: int, kernel_size: int, stride: int,  pad: int = 1):
         """
 
         Custom convolution module that applies padding before convolution and activation after convolution.
@@ -17,12 +17,13 @@ class CustomConv2d(nn.Module):
         :param stride      : stride of convolution
 
         """
-        super(CustomConv2d, self).__init__()
+        super().__init__()
 
         self.pad = pad
 
         self.conv_block = nn.Sequential(
-            nn.Conv2d(**kwargs, padding="valid"), activation(inplace=True)
+            nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding="valid"),
+            activation(inplace=True)
         )
 
         self.initialize_weights()
@@ -78,5 +79,5 @@ class CustomConv2d(nn.Module):
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

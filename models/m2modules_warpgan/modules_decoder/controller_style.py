@@ -4,7 +4,7 @@ import torch.functional as tf
 from torch.nn.modules.activation import ReLU
 
 
-from ...m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
 
 
 class StyleController(nn.Module):
@@ -23,7 +23,7 @@ class StyleController(nn.Module):
         :param input_size      : dimension of the style vectors
         
         """
-        super(StyleController, self).__init__()
+        super().__init__()
 
         # unpack input parameters from args        
         self.input_size = args.style_size
@@ -73,7 +73,7 @@ class StyleController(nn.Module):
         self.initialize_weights()
 
         
-    def forward(self, x) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, x) -> tuple:
         """
         
         Forward function for Style Controller.
@@ -125,5 +125,5 @@ class StyleController(nn.Module):
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

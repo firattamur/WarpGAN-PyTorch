@@ -3,9 +3,9 @@ import typing
 import torch.nn as nn
 
 
-from .m2modules_warpgan.module_encoder import Encoder
-from .m2modules_warpgan.module_decoder import Decoder
-from .m2modules_warpgan.module_discriminator import Discriminator
+from models.m2modules_warpgan.module_encoder import Encoder
+from models.m2modules_warpgan.module_decoder import Decoder
+from models.m2modules_warpgan.module_discriminator import Discriminator
 
 
 class WarpGAN(nn.Module):
@@ -28,16 +28,16 @@ class WarpGAN(nn.Module):
         :param initial          : initial channel number for convolution
         
         """
-        super(WarpGAN, self).__init__()
+        super().__init__()
 
-        self.evaluation = args.evaluation
+        self.is_train = args.is_train
 
         self.encoder = Encoder(args)
         self.decoder = Decoder(args)
         self.discriminator = Discriminator(args)
 
 
-    def forward(self, input: typing.Dict[str, torch.Tensor]) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, input: typing.Dict[str, torch.Tensor]) -> tuple:
         """
         
         Forward function for Discriminator.
@@ -75,7 +75,7 @@ class WarpGAN(nn.Module):
         """
 
         # model is in evaluation mode just return caricature
-        if self.evaluation:
+        if self.is_train:
 
             images_B = input["images_B"]
             scales_B = input["scales_B"] 

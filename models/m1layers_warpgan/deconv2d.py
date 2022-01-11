@@ -6,7 +6,7 @@ import torch.functional as tf
 class CustomDeConv2d(nn.Module):
 
 
-    def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
+    def __init__(self, activation: nn.Module, in_channels: int, out_channels: int, kernel_size: int, stride: int, pad: int = 1):
         """
 
         Custom deconvolution module that applies padding before deconvolution and activation after deconvolution.
@@ -17,12 +17,13 @@ class CustomDeConv2d(nn.Module):
         :param stride : stride of convolution
 
         """
-        super(CustomDeConv2d, self).__init__()
+        super().__init__()
 
         self.pad = pad
 
         self.conv_block = nn.Sequential(
-            nn.ConvTranspose2d(**kwargs, padding="valid"), activation(inplace=True)
+            nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding="valid"),
+            activation(inplace=True)
         )
 
         self.initialize_weights()
@@ -83,5 +84,5 @@ class CustomDeConv2d(nn.Module):
             if isinstance(module, nn.ConvTranspose2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

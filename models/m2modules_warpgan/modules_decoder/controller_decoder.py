@@ -4,11 +4,11 @@ import torch.functional as tf
 from torch.nn.modules.activation import ReLU
 
 
-from ...m1layers_warpgan.conv2d import CustomConv2d
-from ...m1layers_warpgan.deconv2d import CustomDeConv2d
-from ...m1layers_warpgan.upscale2d import CustomUpScale2d
-from ...m1layers_warpgan.sequential import CustomSequential
-from ...m1layers_warpgan.instancenorm2d import CustomInstanceNorm2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.deconv2d import CustomDeConv2d
+from models.m1layers_warpgan.upscale2d import CustomUpScale2d
+from models.m1layers_warpgan.sequential import CustomSequential
+from models.m1layers_warpgan.instancenorm2d import CustomInstanceNorm2d
 
 
 class DecoderController(nn.Module):
@@ -51,12 +51,12 @@ class DecoderController(nn.Module):
             Dout = ( Din + 2 * pad - kernel_size) / ( stride ) + 1
 
         """
-        super(DecoderController, self).__init__()
+        super().__init__()
 
         # unpack input parameters from args
         self.in_channels  = args.initial   * 4
-        self.in_width     = args.in_width  / 4
-        self.in_height    = args.in_height / 4
+        self.in_width     = args.in_width  // 4
+        self.in_height    = args.in_height // 4
 
         self.res1 = CustomSequential(
 
@@ -128,11 +128,11 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels / 2, kernel_size=3, stride=1),
+            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels // 2, kernel_size=3, stride=1),
             
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            nn.InstanceNorm2d(self.in_channels / 2),
+            nn.InstanceNorm2d(self.in_channels // 2),
 
             # inp: (in_batch, initial*2, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*4, in_width*4)
@@ -140,11 +140,11 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*2, in_height*4, in_width*4)
             # out: (in_batch, initial,   in_height*4, in_width*4)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels / 2, out_channels=self.in_channels / 4, kernel_size=3, stride=1),
+            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels // 2, out_channels=self.in_channels // 4, kernel_size=3, stride=1),
             
             # inp: (in_batch, initial, in_height*4, in_width*4)
             # out: (in_batch, initial, in_height*4, in_width*4)
-            nn.InstanceNorm2d(self.in_channels / 4)
+            nn.InstanceNorm2d(self.in_channels // 4)
 
         )
 
@@ -153,7 +153,7 @@ class DecoderController(nn.Module):
         self.tanh = nn.Tanh()
 
 
-    def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> tuple:
         """
         
         Forward function for Style Controller.
@@ -208,5 +208,5 @@ class DecoderController(nn.Module):
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

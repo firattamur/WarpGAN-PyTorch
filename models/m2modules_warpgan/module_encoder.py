@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 
-from modules_encoder.encoder_content import ContentEncoder
-from modules_encoder.encoder_style   import StyleEncoder
+from models.m2modules_warpgan.modules_encoder.encoder_content import ContentEncoder
+from models.m2modules_warpgan.modules_encoder.encoder_style   import StyleEncoder
 
 
 class Encoder(nn.Module):
@@ -26,7 +26,7 @@ class Encoder(nn.Module):
         :param initial          : initial channel number for convolution
         
         """
-        super(Encoder, self).__init__()
+        super().__init__()
 
         # content encoder
         self.content_encoder = ContentEncoder(args)
@@ -35,7 +35,7 @@ class Encoder(nn.Module):
         self.style_encoder   = StyleEncoder(args)
 
 
-    def forward(self, x: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor) -> tuple:
         """
         
         Forward function for Discriminator.

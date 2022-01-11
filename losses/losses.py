@@ -13,7 +13,7 @@ class PatchAdversarialLoss(nn.Module):
     """
 
     def _init_(self):
-        super(PatchAdversarialLoss, self).__init__() 
+        super().__init__() 
 
 
     def forward(self, logits_A, logits_B, logits_BA) -> tuple:
@@ -55,7 +55,7 @@ class AdversarialLoss(nn.Module):
     """
 
     def _init_(self):
-        super(AdversarialLoss, self).__init__()
+        super().__init__()
 
 
     def forward(self, output: typing.Dict[str, torch.Tensor], num_classes: int) -> tuple:

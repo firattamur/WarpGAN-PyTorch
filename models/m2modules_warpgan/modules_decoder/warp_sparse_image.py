@@ -20,8 +20,8 @@ from __future__ import print_function
 import torch
 import numpy as np
 
-from models import dense_image_warp 
-from models import interpolate_spline 
+from models.m2modules_warpgan.modules_decoder.warp_dense_image import dense_image_warp 
+from models.m2modules_warpgan.modules_decoder.interpolate_spline import interpolate_spline 
 
 
 def _torch_cast(np_array, type_to_use):
