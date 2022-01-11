@@ -32,7 +32,7 @@ class WarpController(nn.Module):
         self.n_ldmark    = args.n_ldmark
         self.in_height   = args.in_height
         self.in_width    = args.in_width
-        self.in_channels = args.initial
+        self.in_channels = args.in_channels
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
@@ -50,7 +50,7 @@ class WarpController(nn.Module):
 
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear3 = nn.Linear(in_features=self.n_ldmark * 2, out_features=self.n_ldmark * 2)
+        self.linear3 = nn.Linear(in_features=128, out_features=self.n_ldmark * 2)
 
         # initialize weights of layers
         self.initialize_weights()
@@ -85,10 +85,10 @@ class WarpController(nn.Module):
         out = self.linear1(out)
 
         # Control Points Prediction
-        
+
         # shape: (1, self.n_ldmark * 2)
-        landmarks_mean = torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
-                         torch.tensor([0.5 * self.n_height, 0.5 * self.n_width]).flatten().type(dtype=torch.float32)
+        landmarks_mean = (torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
+                          torch.tensor([0.5 * self.in_height, 0.5 * self.in_width])).flatten().type(dtype=torch.float32)
         
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
@@ -105,7 +105,7 @@ class WarpController(nn.Module):
 
         # (in_batch, n_ldmark * 2) * (in_batch, 1)
         # out: (in_batch, n_ldmark * 2)
-        landmarks_displacement *= self.scales
+        landmarks_displacement *= scales.view(-1, 1)
 
         # shape: (in_batch, n_ldmark, 2)
         landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2))
@@ -121,11 +121,6 @@ class WarpController(nn.Module):
         # out_images_transformed: (in_batch, in_height, in_width, initial(default=64))
         # out_dense_flow        : (in_batch, in_height, in_width, 2)
         images_transformed, dense_flow = sparse_image_warp(images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
-
-        # reshape outputs to torch order
-        # inp: (in_batch, in_height, in_width, initial(default=64))
-        # out: (in_batch, initial(default=64), in_height, in_width)
-        images_transformed = images_transformed.permute(0, 3, 1, 2)
 
         return images_transformed, landmarks_pred, landmarks_norm
 
