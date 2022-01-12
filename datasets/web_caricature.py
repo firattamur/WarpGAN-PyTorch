@@ -190,7 +190,7 @@ class WebCaricatureDataset(Dataset):
         # matched indices are labels for each images
         _, labels = np.unique(labels, return_inverse=True)
 
-        print(f"{len(paths)} images of {labels.max() + 1} classes loaded.")
+        print(f"\n{len(paths)} images of {labels.max() + 1} classes loaded.")
 
         return paths, labels
 
