@@ -10,3 +10,6 @@ conda install numpy matplotlib -y
 
 # install opencv
 conda install -c conda-forge opencv -y
+
+# install imageio
+conda install -c conda-forge imageio
