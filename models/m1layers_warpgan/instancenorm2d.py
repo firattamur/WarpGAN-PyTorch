@@ -13,7 +13,7 @@ class CustomInstanceNorm2d(nn.Module):
         :param num_features: C from an expected input of size (N, C, H, W).
 
         """
-        super(CustomInstanceNorm2d, self).__init__()
+        super().__init__()
 
         self.instance_norm = nn.InstanceNorm2d(num_features, affine=True)
 

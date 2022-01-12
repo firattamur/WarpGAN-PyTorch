@@ -4,11 +4,11 @@ import torch.functional as tf
 from torch.nn.modules.activation import ReLU
 
 
-from ...m1layers_warpgan.conv2d import CustomConv2d
-from ...m1layers_warpgan.deconv2d import CustomDeConv2d
-from ...m1layers_warpgan.upscale2d import CustomUpScale2d
-from ...m1layers_warpgan.sequential import CustomSequential
-from ...m1layers_warpgan.instancenorm2d import CustomInstanceNorm2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.deconv2d import CustomDeConv2d
+from models.m1layers_warpgan.upscale2d import CustomUpScale2d
+from models.m1layers_warpgan.sequential import CustomSequential
+from models.m1layers_warpgan.instancenorm2d import CustomInstanceNorm2d
 
 
 class DecoderController(nn.Module):
@@ -51,12 +51,12 @@ class DecoderController(nn.Module):
             Dout = ( Din + 2 * pad - kernel_size) / ( stride ) + 1
 
         """
-        super(DecoderController, self).__init__()
+        super().__init__()
 
         # unpack input parameters from args
         self.in_channels  = args.initial   * 4
-        self.in_width     = args.in_width  / 4
-        self.in_height    = args.in_height / 4
+        self.in_width     = args.in_width  // 4
+        self.in_height    = args.in_height // 4
 
         self.res1 = CustomSequential(
 
@@ -128,11 +128,11 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels, out_channels=self.in_channels / 2, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels,      out_channels=self.in_channels // 2, kernel_size=5, stride=1, pad=2),
             
             # inp: (in_batch, initial*4, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*2, in_width*2)
-            nn.InstanceNorm2d(self.in_channels / 2),
+            nn.InstanceNorm2d(self.in_channels // 2),
 
             # inp: (in_batch, initial*2, in_height*2, in_width*2)
             # out: (in_batch, initial*2, in_height*4, in_width*4)
@@ -140,20 +140,27 @@ class DecoderController(nn.Module):
 
             # inp: (in_batch, initial*2, in_height*4, in_width*4)
             # out: (in_batch, initial,   in_height*4, in_width*4)
-            CustomDeConv2d(activation=nn.ReLU, in_channels=self.in_channels / 2, out_channels=self.in_channels / 4, kernel_size=3, stride=1),
+            CustomConv2d(activation=nn.ReLU, in_channels=self.in_channels // 2, out_channels=self.in_channels // 4, kernel_size=5, stride=1, pad=2),
             
             # inp: (in_batch, initial, in_height*4, in_width*4)
             # out: (in_batch, initial, in_height*4, in_width*4)
-            nn.InstanceNorm2d(self.in_channels / 4)
+            nn.InstanceNorm2d(self.in_channels // 4)
 
         )
+
+        # inp: (in_batch, initial,   in_height*4, in_width*4)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
+        self.conv = nn.Conv2d(in_channels=self.in_channels//4, out_channels=3, kernel_size=7, stride=1, padding=3)
+        # nn.init.zeros_(self.conv.weight)
 
         # inp: (in_batch, initial, in_height*4, in_width*4)
         # out: (in_batch, initial, in_height*4, in_width*4)
         self.tanh = nn.Tanh()
 
+        # initalize layer weights
+        self.initialize_weights()
 
-    def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, gamma: torch.Tensor, beta: torch.Tensor) -> tuple:
         """
         
         Forward function for Style Controller.
@@ -175,25 +182,29 @@ class DecoderController(nn.Module):
 
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out  = self.res1((x,   gamma, beta))
+        out1 = self.res1((x,   gamma, beta))
 
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res2((out, gamma, beta))
+        out2 = out1[0] + self.res2(out1)[0]
         
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res3((out, gamma, beta))
+        out3 = out2 + self.res3((out2, gamma, beta))[0]
 
         # inp: (in_batch, initial*4, in_height,   in_width)
         # out: (in_batch, initial,   in_height*4, in_width*4)
-        out  = self.deconvs(out)
+        out4 = self.deconvs(out3)
 
         # inp: (in_batch, initial,   in_height*4, in_width*4)
-        # out: (in_batch, initial,   in_height*4, in_width*4)
-        images_rendered  = self.tanh(out)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
+        out5 = self.conv(out4)
 
-        return out, images_rendered
+        # inp: (in_batch, 3,         in_height*4, in_width*4)
+        # out: (in_batch, 3,         in_height*4, in_width*4)
+        images_rendered  = self.tanh(out5)
+
+        return out5, images_rendered
 
 
     def initialize_weights(self) -> None:
@@ -208,5 +219,5 @@ class DecoderController(nn.Module):
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-from modules_decoder.controller_warp import WarpController
-from modules_decoder.controller_style import StyleController
-from modules_decoder.controller_decoder import DecoderController
+from models.m2modules_warpgan.modules_decoder.controller_warp import WarpController
+from models.m2modules_warpgan.modules_decoder.controller_style import StyleController
+from models.m2modules_warpgan.modules_decoder.controller_decoder import DecoderController
 
 
 class Decoder(nn.Module):
@@ -29,14 +29,14 @@ class Decoder(nn.Module):
 
 
         """
-        super(Decoder).__init__()
+        super().__init__()
 
         self.controller_warp    = WarpController(args)
         self.controller_style   = StyleController(args)
         self.controller_decoder = DecoderController(args)
         
 
-    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor, texture_only: bool = False) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, scales: torch.Tensor, styles: torch.Tensor, texture_only: bool = False) -> tuple:
         """
         
         Forward function for Decoder.

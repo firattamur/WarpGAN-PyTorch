@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-from instancenorm2d import CustomInstanceNorm2d
+from models.m1layers_warpgan.instancenorm2d import CustomInstanceNorm2d
 
 
 class CustomSequential(nn.Sequential):
@@ -17,7 +17,7 @@ class CustomSequential(nn.Sequential):
     """
 
 
-    def forward(self, x: tuple(torch.Tensor, torch.Tensor, torch.Tensor)) -> torch.Tensor:
+    def forward(self, x: tuple) -> torch.Tensor:
         """
         
         :param x: tuple of torch.Tensors
@@ -36,8 +36,8 @@ class CustomSequential(nn.Sequential):
         for module in self._modules.values():
 
             if isinstance(module, CustomInstanceNorm2d):
-                inputs = tuple(module(*inputs),   inputs[1], inputs[2])
+                x = (module(*x),   x[1], x[2])
             else:
-                inputs = tuple(module(inputs[0]), inputs[1], inputs[2])
+                x = (module(x[0]), x[1], x[2])
 
-        return inputs 
+        return x 

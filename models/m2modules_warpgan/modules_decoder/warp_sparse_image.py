@@ -20,8 +20,8 @@ from __future__ import print_function
 import torch
 import numpy as np
 
-from models import dense_image_warp 
-from models import interpolate_spline 
+from models.m2modules_warpgan.modules_decoder import warp_dense_image 
+from models.m2modules_warpgan.modules_decoder import interpolate_spline 
 
 
 def _torch_cast(np_array, type_to_use):
@@ -45,7 +45,6 @@ def _get_grid_locations(image_height, image_width):
 
 def _expand_to_minibatch(np_array, batch_size):
   """Tile arbitrarily-sized np_array to include new batch dimension."""
-  print(batch_size)
   tiles = [batch_size] + [1] * np_array.ndim
   #return gen_array_ops.tile(np.expand_dims(np_array, 0), tiles)
   return torch.tile(torch.tensor(np.expand_dims(np_array, 0)), tiles)
@@ -215,6 +214,6 @@ def sparse_image_warp(image,
   #dense_flows = array_ops.reshape(flattened_flows,
   #                                [batch_size, image_height, image_width, 2])
   dense_flows = torch.reshape(flattened_flows, (batch_size, image_height, image_width, 2))
-  warped_image = dense_image_warp.dense_image_warp(image, dense_flows)
+  warped_image = warp_dense_image.dense_image_warp(image, dense_flows)
 
   return warped_image, dense_flows

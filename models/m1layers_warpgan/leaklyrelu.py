@@ -11,7 +11,7 @@ class CustomLeaklyRelu(nn.Module):
         :param negative_slope : negative slope value for leaky relu.
 
         """
-        super(CustomLeaklyRelu, self).__init__()
+        super().__init__()
 
         self.leakly_relu = nn.LeaklyRelu(negative_slope=negative_slope)
 

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.functional as tf
 
 
-from warp_dense_image import sparse_image_warp
+from models.m2modules_warpgan.modules_decoder.warp_sparse_image import sparse_image_warp
 
 
 class WarpController(nn.Module):
@@ -27,12 +27,12 @@ class WarpController(nn.Module):
         
         
         """
+        super().__init__()
 
-        super(WarpController, self).__init__()
-
-        self.n_ldmark = args.n_ldmark
-        self.n_height = args.in_height
-        self.n_width  = args.in_width
+        self.n_ldmark    = args.n_ldmark
+        self.in_height   = args.in_height
+        self.in_width    = args.in_width
+        self.in_channels = args.in_channels
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
@@ -42,21 +42,21 @@ class WarpController(nn.Module):
 
         # inp: (in_batch, in_channels * in_height * in_width)
         # out: (in_batch, 128)
-        self.linear1 = nn.Linear(in_features=in_features, out_features=128)
+        self.linear1 = nn.Linear(in_features=in_features,       out_features=128)
     
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear2 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
+        self.linear2 = nn.Linear(in_features=128,               out_features=self.n_ldmark * 2)
 
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
-        self.linear3 = nn.Linear(in_features=in_features, out_features=self.n_ldmark * 2)
+        self.linear3 = nn.Linear(in_features=128, out_features=self.n_ldmark * 2)
 
         # initialize weights of layers
         self.initialize_weights()
 
         
-    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple(torch.Tensor, torch.Tensor, torch.Tensor):
+    def forward(self, x: torch.Tensor, images_rendered: torch.Tensor, scales: torch.Tensor) -> tuple:
         """
         
         Forward function for Warp Controller.
@@ -85,17 +85,17 @@ class WarpController(nn.Module):
         out = self.linear1(out)
 
         # Control Points Prediction
-        
+
         # shape: (1, self.n_ldmark * 2)
-        landmarks_mean = torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
-                         torch.tensor([0.5 * self.n_height, 0.5 * self.n_width]).flatten().type(dtype=torch.float32)
+        landmarks_mean = (torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
+                          torch.tensor([0.5 * self.in_height, 0.5 * self.in_width])).flatten().type(dtype=torch.float32)
         
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
         landmarks_pred = self.linear2(out)
 
         # shape: (in_batch, n_ldmark * 2)
-        landmarks_pred += landmarks_mean
+        landmarks_pred = landmarks_pred + landmarks_mean
 
         # Displacements Prediction
 
@@ -105,7 +105,7 @@ class WarpController(nn.Module):
 
         # (in_batch, n_ldmark * 2) * (in_batch, 1)
         # out: (in_batch, n_ldmark * 2)
-        landmarks_displacement *= self.scales
+        landmarks_displacement = landmarks_displacement * scales.view(-1, 1)
 
         # shape: (in_batch, n_ldmark, 2)
         landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2))
@@ -122,11 +122,6 @@ class WarpController(nn.Module):
         # out_dense_flow        : (in_batch, in_height, in_width, 2)
         images_transformed, dense_flow = sparse_image_warp(images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
 
-        # reshape outputs to torch order
-        # inp: (in_batch, in_height, in_width, initial(default=64))
-        # out: (in_batch, initial(default=64), in_height, in_width)
-        images_transformed = images_transformed.permute(0, 3, 1, 2)
-
         return images_transformed, landmarks_pred, landmarks_norm
 
 
@@ -142,5 +137,5 @@ class WarpController(nn.Module):
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)

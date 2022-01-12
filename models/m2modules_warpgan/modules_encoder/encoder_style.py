@@ -4,7 +4,7 @@ import torch.functional as tf
 from torch.nn.modules.activation import LeakyReLU, ReLU
 
 
-from ....models.m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
 
 
 class StyleEncoder(nn.Module):
@@ -44,15 +44,16 @@ class StyleEncoder(nn.Module):
             Dout = ( Din + 2 * pad - kernel_size) / ( stride ) + 1
 
         """
-        super(StyleEncoder, self).__init__()
+        super().__init__()
 
 
         # unpack input parameters from args
         self.initial      = args.initial
         self.in_channels  = args.in_channels
-        self.out_channels = args.out_channels
+        self.out_channels = args.n_classes
         self.in_width     = args.in_width
         self.in_height    = args.in_height
+        self.style_size   = args.style_size
         
 
         # inp: (in_batch, in_channels, in_height,   in_width)
@@ -76,12 +77,12 @@ class StyleEncoder(nn.Module):
         # calculate height and width after convolution
 
         # convs out: (in_batch, initial*4, in_height/4, in_width/4)
-        out_height = self.in_height / 4
-        out_width  = self.in_width  / 4
+        out_height = self.in_height // 4
+        out_width  = self.in_width  // 4
 
         # inp: (in_batch, initial*4, in_height/4, in_width/4)
         # out: (in_batch, initial*4, 1,           1)
-        self.avg_pool2d = nn.AvgPool2d(kernel_size=(out_height, out_width), stride=2, padding='valid')
+        self.avg_pool2d = nn.AvgPool2d(kernel_size=(out_height, out_width), stride=2)
 
         # inp: (in_batch, initial*4, 1,           1)
         # out: (in_batch, initial*4 * 1 * 1)
@@ -146,12 +147,12 @@ class StyleEncoder(nn.Module):
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)
 
             if isinstance(module, nn.Linear):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)
 

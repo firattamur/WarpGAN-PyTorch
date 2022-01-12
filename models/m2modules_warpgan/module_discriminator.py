@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.functional as tf
+import torch.nn.functional as tf
 
-from ..m1layers_warpgan.conv2d import CustomConv2d
+from models.m1layers_warpgan.conv2d import CustomConv2d
 
 
 class Discriminator(nn.Module):
@@ -34,6 +34,7 @@ class Discriminator(nn.Module):
         Dout = ( Din + 2 * pad - dilation * ( kernel_size - 1 ) - 1 ) / ( stride ) + 1
 
         """
+        super().__init__()
 
         # unpack input parameters from args
         self.in_channels     = args.in_channels
@@ -80,10 +81,10 @@ class Discriminator(nn.Module):
         # size of flatten tensor
         # dimension reduces to half after each conv layer that's why:
 
-        out_height = self.in_height / 32
-        out_width  = self.in_width  / 32
+        out_height = self.in_height // 32
+        out_width  = self.in_width  // 32
 
-        in_features = 512 * out_height * out_width * self.in_batch
+        in_features = 512 * out_height * out_width
 
         # inp: (in_batch, 512 * in_height/32 * in_width/32)
         # out: (in_batch, 512)
@@ -122,7 +123,7 @@ class Discriminator(nn.Module):
 
         # inp: (in_batch, 3,  in_height/32,  in_width/32)
         # out: (in_batch * in_height/32 * in_width/32, 3)
-        patch5_logits = patch5_logits.reshape(-1, 3)
+        patch5_logits = patch5_logits.view(-1, 3)
 
         # Global Discriminator
         # inp: (in_batch, 512,  in_height/32,  in_width/32)
@@ -135,7 +136,7 @@ class Discriminator(nn.Module):
 
         # inp: (in_batch, 512)
         # out: (in_batch, 512)
-        prelogits = tf.normalize(prelogits, axis=1)
+        prelogits = tf.normalize(prelogits, dim=1)
 
         # inp: (in_batch, 512)
         # out: (in_batch, n_classes)

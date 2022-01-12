@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
-import torch.functional as tf
+import torch.nn.functional as tf
 
 
 class CustomConv2d(nn.Module):
 
 
-    def __init__(self, activation: nn.Module, pad: int = 1, **kwargs):
+    def __init__(self, activation: nn.Module, in_channels: int, out_channels: int, kernel_size: int, stride: int,  pad: int = 1):
         """
 
         Custom convolution module that applies padding before convolution and activation after convolution.
@@ -17,15 +17,17 @@ class CustomConv2d(nn.Module):
         :param stride      : stride of convolution
 
         """
-        super(CustomConv2d, self).__init__()
+        super().__init__()
 
         self.pad = pad
 
         self.conv_block = nn.Sequential(
-            nn.Conv2d(**kwargs, padding="valid"), activation(inplace=True)
+            nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding="valid"),
+            activation()
         )
 
         self.initialize_weights()
+
 
     def forward(self, x) -> torch.Tensor:
         """
@@ -41,7 +43,9 @@ class CustomConv2d(nn.Module):
         """
 
         padded = self.padding(x, pad=self.pad)
+
         return self.conv_block(padded)
+
 
     def padding(self, x: torch.Tensor, pad: int, pad_mode="reflect") -> torch.Tensor:
         """
@@ -57,11 +61,11 @@ class CustomConv2d(nn.Module):
 
         """
 
-        if pad_mode == "reflect":
-            return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="reflect")
-
         if pad_mode == "zero":
-            return tf.pad(input=x, pad=(0, 0, pad, pad, pad, pad, 0, 0), mode="constant")
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="constant")
+
+        if pad_mode == "reflect":
+            return tf.pad(input=x, pad=(pad, pad, pad, pad), mode="reflect")
 
         raise ValueError(f"{pad_mode} must be one of ['reflect', 'zero']!")
 
@@ -78,5 +82,5 @@ class CustomConv2d(nn.Module):
             if isinstance(module, nn.Conv2d):
                 nn.init.kaiming_uniform_(module.weight)
 
-                if module.bias:
+                if module.bias is not None:
                     nn.init.zeros_(module.bias)
