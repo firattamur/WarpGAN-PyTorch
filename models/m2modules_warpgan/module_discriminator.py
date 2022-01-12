@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.functional as tf
+import torch.nn.functional as tf
 
 from models.m1layers_warpgan.conv2d import CustomConv2d
 
@@ -84,7 +84,7 @@ class Discriminator(nn.Module):
         out_height = self.in_height // 32
         out_width  = self.in_width  // 32
 
-        in_features = 512 * out_height * out_width * self.in_batch
+        in_features = 512 * out_height * out_width
 
         # inp: (in_batch, 512 * in_height/32 * in_width/32)
         # out: (in_batch, 512)
@@ -112,9 +112,6 @@ class Discriminator(nn.Module):
         
         """
 
-        import pdb
-        pdb.set_trace()
-
         # inp: (in_batch, in_channels, in_height,     in_width)
         # out: (in_batch, 512,         in_height/32,  in_width/32)
         out = self.convs(x)
@@ -139,7 +136,7 @@ class Discriminator(nn.Module):
 
         # inp: (in_batch, 512)
         # out: (in_batch, 512)
-        prelogits = tf.normalize(prelogits, axis=1)
+        prelogits = tf.normalize(prelogits, dim=1)
 
         # inp: (in_batch, 512)
         # out: (in_batch, n_classes)

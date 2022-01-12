@@ -157,11 +157,7 @@ class WarpGANDiscriminator(nn.Module):
                 images_caric: (in_batch, in_channels, in_height, in_width)
                 images_photo: (in_batch, in_channels, in_height, in_width)
 
-                labels_caric: (in_batch, 1)
-                labels_photo: (in_batch, 1)
-
-                scales_caric: (in_batch, 1)
-                scales_photo: (in_batch, 1)
+                generated_caric: (in_batch, in_channels, in_height, in_width)
 
             }
 
@@ -182,12 +178,8 @@ class WarpGANDiscriminator(nn.Module):
 
         images_caric = input["images_caric"]
         images_photo = input["images_photo"]
-
-        labels_caric = input["labels_caric"]
-        labels_photo = input["labels_photo"]
-
-        scales_caric = input["scales_caric"]
-        scales_photo = input["scales_photo"] 
+        
+        generated_caric = input["generated_caric"]
 
         # --------------------------------------------------------
         # Module Discriminator

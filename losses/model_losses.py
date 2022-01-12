@@ -12,35 +12,35 @@ class PatchAdversarialLoss(nn.Module):
     
     """
 
-    def _init_(self):
+    def __init__(self):
         super().__init__() 
 
 
-    def forward(self, logits_A, logits_B, logits_BA) -> tuple:
+    def forward(self, logits_caric, logits_photo, logits_generated_caric) -> tuple:
         """       
         Forward function for patch adversarial loss.
 
-        :param logits_A: 
+        :param logits_caric: 
             :shape: (in_height/32 * in_width/32, in_channels)
-        :param logits_B: 
+        :param logits_photo: 
             :shape: (in_height/32 * in_width/32, in_channels)
-        :param logits_BA: 
+        :param logits_generated_caric: 
             :shape: (in_height/32 * in_width/32, in_channels)
 
         :return : loss_D and loss_G
         
         """
 
-        labels_D_A  = torch.zeros(logits_A.shape[0:1],  dtype = torch.int64)
-        labels_D_B  = torch.ones(logits_B.shape[0:1],   dtype = torch.int64)
+        labels_D_A  = torch.zeros(logits_caric.shape[0:1],  dtype = torch.int64)
+        labels_D_B  = torch.ones(logits_photo.shape[0:1],   dtype = torch.int64)
         
-        labels_D_BA = torch.ones(logits_BA.shape[0:1],  dtype = torch.int64) * 2
-        labels_G_BA = torch.zeros(logits_BA.shape[0:1], dtype = torch.int64)
+        labels_D_BA = torch.ones(logits_generated_caric.shape[0:1],  dtype = torch.int64) * 2
+        labels_G_BA = torch.zeros(logits_generated_caric.shape[0:1], dtype = torch.int64)
 
-        loss_D_A  = F.cross_entropy(input=logits_A,  target=labels_D_A)
-        loss_D_B  = F.cross_entropy(input=logits_B,  target=labels_D_B)
-        loss_D_BA = F.cross_entropy(input=logits_BA, target=labels_D_BA)
-        loss_G    = F.cross_entropy(input=logits_BA, target=labels_G_BA)
+        loss_D_A  = F.cross_entropy(input=logits_caric,  target=labels_D_A)
+        loss_D_B  = F.cross_entropy(input=logits_photo,  target=labels_D_B)
+        loss_D_BA = F.cross_entropy(input=logits_generated_caric, target=labels_D_BA)
+        loss_G    = F.cross_entropy(input=logits_generated_caric, target=labels_G_BA)
 
         loss_D = loss_D_A + loss_D_B + loss_D_BA
 
@@ -54,24 +54,26 @@ class AdversarialLoss(nn.Module):
         
     """
 
-    def _init_(self):
+    def __init__(self, args):
         super().__init__()
 
+        self.n_classes = args.n_classes
 
-    def forward(self, output: typing.Dict[str, torch.Tensor], num_classes: int) -> tuple:
+    def forward(self, output: typing.Dict[str, torch.Tensor]) -> tuple:
         """       
         Forward function for patch adversarial loss.
 
         :param output_dict: dictionary containing the outputs of discriminator and labels
+
             :shape: {
 
-                logits_A : (in_batch, n_classes)
-                logits_B : (in_batch, n_classes)
-                logits_BA: (in_batch, n_classes)
+                logits_caric : (in_batch, n_classes)
+                logits_photo : (in_batch, n_classes)
+                logits_generated_caric: (in_batch, n_classes)
 
-                labels_A : (in_batch, 1)
-                labels_B : (in_batch, 1)
-                label_BA : (in_batch, 1)
+                labels_caric : (in_batch, 1)
+                labels_photo : (in_batch, 1)
+                labels_generated_caric : (in_batch, 1)
 
             }
 
@@ -80,22 +82,22 @@ class AdversarialLoss(nn.Module):
         """
 
         # unpack output dict
-        logits_A  = output["logits_A"]
-        logits_B  = output["logits_B"]
-        logits_BA = output["logits_BA"]
+        logits_caric  = output["logits_caric"]
+        logits_photo  = output["logits_photo"]
+        logits_generated_caric = output["logits_generated_caric"]
 
-        labels_A  = output["labels_A"]
-        labels_B  = output["labels_B"]
-        labels_BA = output["label_BA"]
+        labels_caric  = output["labels_caric"]
+        labels_photo  = output["labels_photo"]
+        labels_generated_caric = output["labels_generated_caric"]
 
         # Cross entropy function expects label input as long: int64 ??
 
-        loss_D_A  = F.cross_entropy(input=logits_A,  target=labels_A)
-        loss_D_B  = F.cross_entropy(input=logits_B,  target=labels_B  + num_classes)
-        loss_D_BA = F.cross_entropy(input=logits_BA, target=labels_BA + 2 * num_classes)
+        loss_D_A  = F.cross_entropy(input=logits_caric,  target=labels_caric)
+        loss_D_B  = F.cross_entropy(input=logits_photo,  target=labels_photo)
+        loss_D_BA = F.cross_entropy(input=logits_generated_caric, target=labels_generated_caric)
 
         loss_D = loss_D_A + loss_D_B + loss_D_BA
 
-        loss_G = F.cross_entropy(input=logits_BA, target=labels_BA)
+        loss_G = F.cross_entropy(input=logits_generated_caric, target=labels_generated_caric)
 
         return loss_D, loss_G

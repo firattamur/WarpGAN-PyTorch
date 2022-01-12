@@ -93,6 +93,8 @@ class WebCaricatureDataset(Dataset):
         # get image paths from index txt and get labels for each image
         self.paths, self.labels = self._get_paths()
 
+        print(self.labels)
+
         # create person class for each category (person) in dataset
         self.classes    = self._create_classes()
         self.n_classes  = len(self.classes)
