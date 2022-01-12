@@ -39,17 +39,17 @@ if __name__ == "__main__":
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.in_batch, shuffle=True)
 
     # decide which device we want to run on
-    device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+    config.device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
     
-    print(f"\nTraining Device: {device}\n")
+    print(f"\nTraining Device: {config.device}\n")
 
     # load models
-    warpgan_generator     = WarpGANGenerator(config).to(device)
-    warpgan_discriminator = WarpGANDiscriminator(config).to(device)
+    warpgan_generator     = WarpGANGenerator(config).to(config.device)
+    warpgan_discriminator = WarpGANDiscriminator(config).to(config.device)
 
     # load losses
-    adversarial_loss       = AdversarialLoss(config).to(device)
-    patch_adversarial_loss = PatchAdversarialLoss().to(device)
+    adversarial_loss       = AdversarialLoss(config).to(config.device)
+    patch_adversarial_loss = PatchAdversarialLoss().to(config.device)
 
     # setup Adam optimizers for both G and D
 
@@ -77,21 +77,21 @@ if __name__ == "__main__":
                             
             generator_input_dict = {
                 
-                "images_photo" : data["images_photo"],
-                "images_caric" : data["images_caric"],
+                "images_photo" : data["images_photo"].to(config.device),
+                "images_caric" : data["images_caric"].to(config.device),
                 
-                "labels_photo" : data["labels_photo"],
-                "labels_caric" : data["labels_caric"],
+                "labels_photo" : data["labels_photo"].to(config.device),
+                "labels_caric" : data["labels_caric"].to(config.device),
                 
-                "scales_photo" : data["scales_photo"],
-                "scales_caric" : data["scales_caric"],
+                "scales_photo" : data["scales_photo"].to(config.device),
+                "scales_caric" : data["scales_caric"].to(config.device),
                 
             }
             
             discriminator_input_dict = {
                 
-                "images_photo" : data["images_photo"],
-                "images_caric" : data["images_caric"],
+                "images_photo" : data["images_photo"].to(config.device),
+                "images_caric" : data["images_caric"].to(config.device),
                 
                 "generated_caric": None
                 
