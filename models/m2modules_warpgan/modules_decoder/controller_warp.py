@@ -95,7 +95,7 @@ class WarpController(nn.Module):
         landmarks_pred = self.linear2(out)
 
         # shape: (in_batch, n_ldmark * 2)
-        landmarks_pred += landmarks_mean
+        landmarks_pred = landmarks_pred + landmarks_mean
 
         # Displacements Prediction
 
@@ -105,7 +105,7 @@ class WarpController(nn.Module):
 
         # (in_batch, n_ldmark * 2) * (in_batch, 1)
         # out: (in_batch, n_ldmark * 2)
-        landmarks_displacement *= scales.view(-1, 1)
+        landmarks_displacement = landmarks_displacement * scales.view(-1, 1)
 
         # shape: (in_batch, n_ldmark, 2)
         landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2))

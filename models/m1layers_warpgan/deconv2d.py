@@ -23,7 +23,7 @@ class CustomDeConv2d(nn.Module):
 
         self.conv_block = nn.Sequential(
             nn.ConvTranspose2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride),
-            activation(inplace=True)
+            activation()
         )
 
         self.initialize_weights()

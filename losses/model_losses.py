@@ -40,9 +40,10 @@ class PatchAdversarialLoss(nn.Module):
         loss_D_A  = F.cross_entropy(input=logits_caric,  target=labels_D_A)
         loss_D_B  = F.cross_entropy(input=logits_photo,  target=labels_D_B)
         loss_D_BA = F.cross_entropy(input=logits_generated_caric, target=labels_D_BA)
+        
         loss_G    = F.cross_entropy(input=logits_generated_caric, target=labels_G_BA)
 
-        loss_D = loss_D_A + loss_D_B + loss_D_BA
+        loss_D    = loss_D_A + loss_D_B + loss_D_BA
 
         return loss_D, loss_G
 
@@ -96,8 +97,8 @@ class AdversarialLoss(nn.Module):
         loss_D_B  = F.cross_entropy(input=logits_photo,  target=labels_photo)
         loss_D_BA = F.cross_entropy(input=logits_generated_caric, target=labels_generated_caric)
 
-        loss_D = loss_D_A + loss_D_B + loss_D_BA
+        loss_D    = loss_D_A + loss_D_B + loss_D_BA
 
-        loss_G = F.cross_entropy(input=logits_generated_caric, target=labels_generated_caric)
+        loss_G    = F.cross_entropy(input=logits_generated_caric, target=labels_generated_caric)
 
         return loss_D, loss_G

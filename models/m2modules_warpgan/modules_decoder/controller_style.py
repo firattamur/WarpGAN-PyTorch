@@ -100,7 +100,7 @@ class StyleController(nn.Module):
 
         # inp: (batch_size, 4 * k)
         # out: (batch_size, 4 * k, 1, 1)
-        gamma = torch.reshape(gamma, [-1, 4 * self.k, 1, 1])
+        gamma = gamma.view([-1, 4 * self.k, 1, 1])
         
         # inp: (batch_size, 128)
         # out: (batch_size, 4 * k, 1, 1)
@@ -108,7 +108,7 @@ class StyleController(nn.Module):
 
         # inp: (batch_size, 4 * k)
         # out: (batch_size, 4 * k, 1, 1)
-        beta = torch.reshape(beta, [-1, 4 * self.k, 1, 1])
+        beta = beta.view([-1, 4 * self.k, 1, 1])
         
         return beta, gamma
         

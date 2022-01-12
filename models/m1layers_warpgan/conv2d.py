@@ -23,7 +23,7 @@ class CustomConv2d(nn.Module):
 
         self.conv_block = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride, padding="valid"),
-            activation(inplace=True)
+            activation()
         )
 
         self.initialize_weights()

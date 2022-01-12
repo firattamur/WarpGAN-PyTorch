@@ -76,8 +76,8 @@ class WarpGANGenerator(nn.Module):
             images_photo = input["images_photo"]
             scales_photo = input["scales_photo"] 
 
-            encoded_photo, styles_B = self.encoder(images_photo)
-            generated_caric, _, _, _    = self.decoder(encoded_photo, scales_photo, None)
+            encoded_photo, styles_B  = self.encoder(images_photo)
+            generated_caric, _, _, _ = self.decoder(encoded_photo, scales_photo, None)
 
             return generated_caric
 

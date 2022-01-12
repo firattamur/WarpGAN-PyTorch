@@ -123,7 +123,7 @@ class Discriminator(nn.Module):
 
         # inp: (in_batch, 3,  in_height/32,  in_width/32)
         # out: (in_batch * in_height/32 * in_width/32, 3)
-        patch5_logits = patch5_logits.reshape(-1, 3)
+        patch5_logits = patch5_logits.view(-1, 3)
 
         # Global Discriminator
         # inp: (in_batch, 512,  in_height/32,  in_width/32)

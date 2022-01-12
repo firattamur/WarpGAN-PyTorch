@@ -147,15 +147,15 @@ class ContentEncoder(nn.Module):
 
         # inp: (in_batch, initial * 4, in_height/4, in_width/4)
         # out: (in_batch, initial * 4, in_height/4, in_width/4)
-        out += self.res1(out)
+        out = out + self.res1(out)
 
         # inp: (in_batch, initial * 4, in_height/4, in_width/4)
         # out: (in_batch, initial * 4, in_height/4, in_width/4)
-        out += self.res2(out)
+        out = out + self.res2(out)
 
         # inp: (in_batch, initial * 4, in_height/4, in_width/4)
         # out: (in_batch, initial * 4, in_height/4, in_width/4)
-        out += self.res3(out)
+        out = out + self.res3(out)
 
         return out
         

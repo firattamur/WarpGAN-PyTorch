@@ -182,29 +182,29 @@ class DecoderController(nn.Module):
 
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out  = self.res1((x,   gamma, beta))
+        out1 = self.res1((x,   gamma, beta))
 
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res2(out)
+        out2 = out1[0] + self.res2(out1)[0]
         
         # inp: (in_batch, initial*4, in_height, in_width)
         # out: (in_batch, initial*4, in_height, in_width)
-        out += self.res3(out)
+        out3 = out2 + self.res3((out2, gamma, beta))[0]
 
         # inp: (in_batch, initial*4, in_height,   in_width)
         # out: (in_batch, initial,   in_height*4, in_width*4)
-        out  = self.deconvs(out[0])
+        out4 = self.deconvs(out3)
 
         # inp: (in_batch, initial,   in_height*4, in_width*4)
         # out: (in_batch, 3,         in_height*4, in_width*4)
-        out = self.conv(out)
+        out5 = self.conv(out4)
 
         # inp: (in_batch, 3,         in_height*4, in_width*4)
         # out: (in_batch, 3,         in_height*4, in_width*4)
-        images_rendered  = self.tanh(out)
+        images_rendered  = self.tanh(out5)
 
-        return out, images_rendered
+        return out5, images_rendered
 
 
     def initialize_weights(self) -> None:
