@@ -57,7 +57,7 @@ class WarpGANGenerator(nn.Module):
         :return : output dict contains required inputs for loss modules
             :shape: {
 
-                generated_caric   : (in_batch, in_channels, in_height, in_width)
+                generated_caric            : (in_batch, in_channels, in_height, in_width)
                 rendered_generated_caric   : (in_batch, in_channels, in_height, in_width)
 
                 landmark_pred : (in_batch, n_ldmark * 2)

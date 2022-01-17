@@ -100,10 +100,27 @@ class WebCaricatureDataset(Dataset):
         # set photos and caricatures for each person class
         self.p_indices  = self._separate_photos_caricatures_for_classes()
 
-        # imageio numpy array to tensor
-        self._to_tensor = vision_transforms.Compose(
-            [vision_transforms.ToPILImage(), vision_transforms.transforms.ToTensor()]
-        )
+        # preprocess images
+        if self.is_train:
+
+            self.preprocess = vision_transforms.Compose(
+                [
+                    vision_transforms.ToPILImage(),
+                    vision_transforms.transforms.ToTensor(),
+                    vision_transforms.RandomHorizontalFlip(),
+                    vision_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                ]
+            )
+        
+        else:
+
+            self.preprocess = vision_transforms.Compose(
+                [   
+                    vision_transforms.ToPILImage(),
+                    vision_transforms.transforms.ToTensor(),
+                    vision_transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                ]
+            )
 
     def __len__(self) -> int:
         """
@@ -149,8 +166,8 @@ class WebCaricatureDataset(Dataset):
 
         return {
 
-            "images_photo": self._to_tensor(photo_image),
-            "images_caric": self._to_tensor(caric_image),
+            "images_photo": self.preprocess(photo_image),
+            "images_caric": self.preprocess(caric_image),
             
             "labels_photo": photo_labels,
             "labels_caric": caric_labels,

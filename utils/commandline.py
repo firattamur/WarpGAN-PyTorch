@@ -9,7 +9,7 @@ def load_config(argv):
     parser.add_argument("--config",  
                         help="The path to the train config file",
                         type=str,
-                        default="./config/config_train.py")
+                        default="./config/config.py")
 
     args = parser.parse_args()
 

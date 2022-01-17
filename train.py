@@ -13,6 +13,7 @@ import torch.optim as optim
 import torch.utils.data
 import torchvision.datasets as dset
 from torch.utils.tensorboard import SummaryWriter
+from torchvision import transforms
 
 import sys
 from utils.commandline import load_config
@@ -26,6 +27,11 @@ manualSeed = 42
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
 
+
+invNormalize = transforms.Normalize(
+                                    mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+                                    std=[1/0.229, 1/0.224, 1/0.225]
+                                    )
 
 if __name__ == "__main__":
 
@@ -185,21 +191,33 @@ if __name__ == "__main__":
             optimizerG.step()
             
             # output training stats
-            if i % 100 == 0:
+            if i % config.log == 0:
                 
-                log  = f"[{epoch}/{config.num_epochs}][{i}/{len(dataloader)}]\t"
-                log += f"Loss_G: {loss_G} - "
-                log += f"Loss_D: {loss_D}"
+                steps = f"[{epoch:02}/{config.num_epochs:02}][{i:04}/{len(dataloader):04}]"
+
+                log  = steps
+                log += f" G -> [Total: {loss_G:.5f}]"
+
+                log += f"[Adversial: {loss_GA:.5f}]"
+                log += f"[Patch: {loss_GP:.5f}]"
+                log += f"[IdtCaric: {loss_idt_caric:.5f}]"
+                log += f"[IdtPhoto: {loss_idt_photo:.5f}]\n"
+
+                log += len(steps) * " "
+                log += f" D -> [Total: {loss_D:.5f}]"
+                log += f"[Adversial: {loss_DA:.5f}]"
+                log += f"[Patch: {loss_DP:.5f}]"
 
                 print(log)
+                print()
                 
             # check how the generator is doing by saving G's output
-            if global_iter % 100 == 0:
+            if global_iter % config.summary == 0:
                 
                 image_photo = generator_input_dict["images_photo"][0].detach().cpu()
                 image_caric = generator_input_dict["images_caric"][0].detach().cpu()
 
-                generated   = generator_output["generated_caric"][0].detach().cpu()
+                generated   = invNormalize(generator_output["generated_caric"][0].detach().cpu())
                 
                 writer.add_image("Images/1 - Photo",       image_photo,     global_iter)
                 writer.add_image("Images/2 - Caricature",  image_caric,     global_iter)

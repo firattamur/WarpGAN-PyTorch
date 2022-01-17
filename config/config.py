@@ -8,16 +8,13 @@ Configuration hyperparameters for train.
 ####### INPUT OUTPUT #######
 
 # The name of the current model for output
-name = "default"
-
-# The folder to save log and model
-log_base_dir = "./log/"
-
-# Whether to save the model checkpoints and result logs
-save_model = True
+name = "WarpGAN - Default"
 
 # The interval between writing summary
-summary_interval = 100
+summary = 100
+
+# The log interval
+log     = 10
 
 # Root of WebCaricature dataset
 root = "./datasets/"
@@ -79,11 +76,13 @@ k = 64
 # number of landmark points
 n_ldmark = 16
 
+# checkpoint path
+checkpoint_path = "./checkpoints"
+
 ####### TRAINING STRATEGY #######
 
 # Optimizer
 optimizer = ("ADAM", {"beta1": 0.5, "beta2": 0.9})
-# optimizer = ("MOM", {'momentum': 0.9})
 
 # Number of samples per batch
 in_batch = 2
@@ -107,9 +106,6 @@ learning_rate_schedule = {
 
 # Restore model
 restore_model = "pretrained/discriminator_casia_256/"
-
-# Keywords to filter restore variables, set None for all
-restore_scopes = ["Discriminator/conv", "Discriminator/Bot"]
 
 # Weight decay for model variables
 weight_decay = 1e-4
