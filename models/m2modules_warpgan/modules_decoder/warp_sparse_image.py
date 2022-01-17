@@ -37,9 +37,10 @@ def _torch_cast(np_array, type_to_use):
 def _get_grid_locations(image_height, image_width):
   """Wrapper for np.meshgrid."""
 
-  y_range = np.linspace(0, image_height - 1, image_height)
-  x_range = np.linspace(0, image_width - 1, image_width)
+  y_range        = np.linspace(0, image_height - 1, image_height)
+  x_range        = np.linspace(0, image_width - 1, image_width)
   y_grid, x_grid = np.meshgrid(y_range, x_range, indexing='ij')
+
   return np.stack((y_grid, x_grid), -1)
 
 
@@ -114,7 +115,8 @@ def _add_zero_flow_controls_at_boundary(control_point_locations,
   return merged_control_point_locations, merged_control_point_flows
 
 
-def sparse_image_warp(image,
+def sparse_image_warp(device,
+                      image,
                       source_control_point_locations,
                       dest_control_point_locations,
                       interpolation_order=2,
@@ -177,8 +179,7 @@ def sparse_image_warp(image,
   #dest_control_point_locations = ops.convert_to_tensor(
   #    dest_control_point_locations)
 
-  control_point_flows = (
-      dest_control_point_locations - source_control_point_locations)
+  control_point_flows = (dest_control_point_locations - source_control_point_locations)
 
   clamp_boundaries = num_boundary_points > 0
   boundary_points_per_edge = num_boundary_points - 1
@@ -193,27 +194,26 @@ def sparse_image_warp(image,
   # will be evaluated.
   grid_locations = _get_grid_locations(image_height, image_width)
 
-  flattened_grid_locations = np.reshape(grid_locations,
-                                        [image_height * image_width, 2])
+  flattened_grid_locations = np.reshape(grid_locations, [image_height * image_width, 2])
 
-  #flattened_grid_locations = tf.cast(
+  # flattened_grid_locations = tf.cast(
   #    _expand_to_minibatch(flattened_grid_locations, batch_size), image.dtype)
     
-  flattened_grid_locations = _torch_cast(_expand_to_minibatch(flattened_grid_locations, batch_size), image.dtype)
+  flattened_grid_locations = _torch_cast(_expand_to_minibatch(flattened_grid_locations, batch_size), image.dtype).to(device)
     
   if clamp_boundaries:
-    (dest_control_point_locations,
-     control_point_flows) = _add_zero_flow_controls_at_boundary(
-         dest_control_point_locations, control_point_flows, image_height,
-         image_width, boundary_points_per_edge)
+      (dest_control_point_locations, control_point_flows) = _add_zero_flow_controls_at_boundary(dest_control_point_locations,
+                                                                                                control_point_flows, image_height,
+                                                                                                image_width, boundary_points_per_edge)
 
-  flattened_flows = interpolate_spline.interpolate_spline(
-      dest_control_point_locations, control_point_flows,
-      flattened_grid_locations, interpolation_order, regularization_weight)
+      dest_control_point_locations.to(device)
+      control_point_flows.to(device)
 
-  #dense_flows = array_ops.reshape(flattened_flows,
-  #                                [batch_size, image_height, image_width, 2])
-  dense_flows = torch.reshape(flattened_flows, (batch_size, image_height, image_width, 2))
-  warped_image = warp_dense_image.dense_image_warp(image, dense_flows)
+  flattened_flows = interpolate_spline.interpolate_spline(device,
+                                                          dest_control_point_locations, control_point_flows,
+                                                          flattened_grid_locations, interpolation_order, regularization_weight)
+
+  dense_flows  = torch.reshape(flattened_flows, (batch_size, image_height, image_width, 2)).to(device)
+  warped_image = warp_dense_image.dense_image_warp(device, image, dense_flows)
 
   return warped_image, dense_flows

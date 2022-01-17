@@ -12,9 +12,10 @@ class PatchAdversarialLoss(nn.Module):
     
     """
 
-    def __init__(self):
+    def __init__(self, args):
         super().__init__() 
 
+        self.device = args.device
 
     def forward(self, logits_caric, logits_photo, logits_generated_caric) -> tuple:
         """       
@@ -31,11 +32,11 @@ class PatchAdversarialLoss(nn.Module):
         
         """
 
-        labels_D_A  = torch.zeros(logits_caric.shape[0:1],  dtype = torch.int64)
-        labels_D_B  = torch.ones(logits_photo.shape[0:1],   dtype = torch.int64)
+        labels_D_A  = torch.zeros(logits_caric.shape[0:1],  dtype = torch.int64).to(self.device)
+        labels_D_B  = torch.ones(logits_photo.shape[0:1],   dtype = torch.int64).to(self.device)
         
-        labels_D_BA = torch.ones(logits_generated_caric.shape[0:1],  dtype = torch.int64) * 2
-        labels_G_BA = torch.zeros(logits_generated_caric.shape[0:1], dtype = torch.int64)
+        labels_D_BA = torch.ones(logits_generated_caric.shape[0:1],  dtype = torch.int64).to(self.device) * 2
+        labels_G_BA = torch.zeros(logits_generated_caric.shape[0:1], dtype = torch.int64).to(self.device)
 
         loss_D_A  = F.cross_entropy(input=logits_caric,  target=labels_D_A)
         loss_D_B  = F.cross_entropy(input=logits_photo,  target=labels_D_B)
@@ -59,6 +60,7 @@ class AdversarialLoss(nn.Module):
         super().__init__()
 
         self.n_classes = args.n_classes
+        self.device    = args.device
 
     def forward(self, output: typing.Dict[str, torch.Tensor]) -> tuple:
         """       

@@ -85,7 +85,7 @@ def _phi(r: torch.Tensor, order: int) -> torch.Tensor:
         return torch.pow(r, 0.5 * order)
 
 
-def _solve_interpolation(train_points: torch.Tensor, train_values: torch.Tensor, order: int, regularization_weight: float) -> torch.Tensor:
+def _solve_interpolation(device, train_points: torch.Tensor, train_values: torch.Tensor, order: int, regularization_weight: float) -> torch.Tensor:
     """
     Solve for interpolation coefficients.
     Computes the coefficients of the polyharmonic interpolant for the 'training'
@@ -111,27 +111,30 @@ def _solve_interpolation(train_points: torch.Tensor, train_values: torch.Tensor,
     # matrix_a for A and matrix_b for B.
     c = train_points
     f = train_values
+
     # Next, construct the linear system
-    matrix_a = _phi(_pairwise_squared_distance_matrix(c), order)  # [b, n, n]
+    matrix_a = _phi(_pairwise_squared_distance_matrix(c), order).to(device)  # [b, n, n]
+
     if regularization_weight > 0:
         batch_identity_matrix = np.expand_dims(np.eye(n), 0)
-        batch_identity_matrix = torch.tensor(batch_identity_matrix, dtype=train_points.dtype)
+        batch_identity_matrix = torch.tensor(batch_identity_matrix, dtype=train_points.dtype).to(device)
+
         matrix_a += regularization_weight * batch_identity_matrix
 
     # Append ones to the feature values for the bias term in the linear model.
-    ones = torch.ones([b, n, 1], dtype = train_points.dtype)
-    matrix_b = torch.concat([c, ones], 2)  # [b, n, d + 1]
+    ones = torch.ones([b, n, 1], dtype = train_points.dtype).to(device)
+    matrix_b = torch.concat([c, ones], 2).to(device)  # [b, n, d + 1]
 
     # [b, n + d + 1, n]
-    left_block = torch.concat([matrix_a, torch.transpose(matrix_b, 2, 1)], 1)
+    left_block = torch.concat([matrix_a, torch.transpose(matrix_b, 2, 1)], 1).to(device)
 
     num_b_cols = matrix_b.size()[2]  # d + 1
-    lhs_zeros = torch.zeros([b, num_b_cols, num_b_cols], dtype = train_points.dtype)
+    lhs_zeros = torch.zeros([b, num_b_cols, num_b_cols], dtype = train_points.dtype).to(device)
     right_block = torch.concat([matrix_b, lhs_zeros], 1)  # [b, n + d + 1, d + 1]
-    lhs = torch.concat([left_block, right_block], 2)  # [b, n + d + 1, n + d + 1]
+    lhs = torch.concat([left_block, right_block], 2).to(device)  # [b, n + d + 1, n + d + 1]
 
-    rhs_zeros = torch.zeros([b, d + 1, k], dtype = train_points.dtype)
-    rhs = torch.concat([f, rhs_zeros], 1)  # [b, n + d + 1, k]
+    rhs_zeros = torch.zeros([b, d + 1, k], dtype = train_points.dtype).to(device)
+    rhs = torch.concat([f, rhs_zeros], 1).to(device)  # [b, n + d + 1, k]
 
     # Then, solve the linear system and unpack the results.
     w_v = torch.linalg.solve(lhs, rhs)
@@ -140,7 +143,7 @@ def _solve_interpolation(train_points: torch.Tensor, train_values: torch.Tensor,
 
     return w, v
 
-def _apply_interpolation(query_points: torch.Tensor, train_points: torch.Tensor, w: torch.Tensor, v: torch.Tensor, order: int) -> torch.Tensor:
+def _apply_interpolation(device, query_points: torch.Tensor, train_points: torch.Tensor, w: torch.Tensor, v: torch.Tensor, order: int) -> torch.Tensor:
     """
     Apply polyharmonic interpolation model to data.
     Given coefficients w and v for the interpolation model, we evaluate
@@ -165,19 +168,20 @@ def _apply_interpolation(query_points: torch.Tensor, train_points: torch.Tensor,
     num_query_points = query_points.size()[1]
 
     # First, compute the contribution from the rbf term.
-    pairwise_dists = _cross_squared_distance_matrix(query_points, train_points)
-    phi_pairwise_dists = _phi(pairwise_dists, order)
+    pairwise_dists = _cross_squared_distance_matrix(query_points, train_points).to(device)
+    phi_pairwise_dists = _phi(pairwise_dists, order).to(device)
 
     rbf_term = torch.matmul(phi_pairwise_dists, w)
 
     # Then, compute the contribution from the linear term.
     # Pad query_points with ones, for the bias term in the linear model.
-    query_points_pad = torch.concat([query_points, torch.ones([batch_size, num_query_points, 1], dtype = train_points.dtype)], 2)
+    query_points_pad = torch.concat([query_points, 
+                                    torch.ones([batch_size, num_query_points, 1], dtype = train_points.dtype).to(device)], 2).to(device)
     linear_term = torch.matmul(query_points_pad, v)
 
     return rbf_term + linear_term
     
-def interpolate_spline(train_points: torch.Tensor, train_values: torch.Tensor, query_points: torch.Tensor, order: int, regularization_weight: float = 0.0) -> torch.Tensor:
+def interpolate_spline(device, train_points: torch.Tensor, train_values: torch.Tensor, query_points: torch.Tensor, order: int, regularization_weight: float = 0.0) -> torch.Tensor:
     """
     Interpolate signal using polyharmonic interpolation
 
@@ -195,16 +199,14 @@ def interpolate_spline(train_points: torch.Tensor, train_values: torch.Tensor, q
         :shape: [batch_size, m, k]
 
     """
-    train_points = torch.as_tensor(train_points)
-    train_values = torch.as_tensor(train_values)
-    query_points = torch.as_tensor(query_points)
+    train_points = torch.as_tensor(train_points).to(device)
+    train_values = torch.as_tensor(train_values).to(device)
+    query_points = torch.as_tensor(query_points).to(device)
 
     # First, fit the spline to the observed data.
-    w, v = _solve_interpolation(train_points, train_values, order,
-                                regularization_weight)
+    w, v = _solve_interpolation(device, train_points, train_values, order, regularization_weight)
 
     # Then, evaluate the spline at the query locations.
-    query_values = _apply_interpolation(query_points, train_points, w, v,
-                                            order)
+    query_values = _apply_interpolation(device, query_points, train_points, w, v, order)
 
     return query_values

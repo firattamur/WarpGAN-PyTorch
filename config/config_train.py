@@ -92,7 +92,7 @@ in_batch = 2
 epoch_size = 5000
 
 # Number of epochs
-num_epochs = 20
+num_epochs = 50
 
 # learning rate strategy
 learning_rate_strategy = "linear"

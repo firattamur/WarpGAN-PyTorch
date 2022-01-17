@@ -39,17 +39,17 @@ if __name__ == "__main__":
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.in_batch, shuffle=True)
 
     # decide which device we want to run on
-    device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+    config.device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
     
-    print(f"\nTraining Device: {device}\n")
+    print(f"\nTraining Device: {config.device}\n")
 
     # load models
-    warpgan_generator     = WarpGANGenerator(config).to(device)
-    warpgan_discriminator = WarpGANDiscriminator(config).to(device)
+    warpgan_generator     = WarpGANGenerator(config).to(config.device)
+    warpgan_discriminator = WarpGANDiscriminator(config).to(config.device)
 
     # load losses
-    adversarial_loss       = AdversarialLoss(config).to(device)
-    patch_adversarial_loss = PatchAdversarialLoss().to(device)
+    adversarial_loss       = AdversarialLoss(config).to(config.device)
+    patch_adversarial_loss = PatchAdversarialLoss(config).to(config.device)
 
     # setup Adam optimizers for both G and D
 
@@ -77,21 +77,21 @@ if __name__ == "__main__":
                             
             generator_input_dict = {
                 
-                "images_photo" : data["images_photo"],
-                "images_caric" : data["images_caric"],
+                "images_photo" : data["images_photo"].to(config.device),
+                "images_caric" : data["images_caric"].to(config.device),
                 
-                "labels_photo" : data["labels_photo"],
-                "labels_caric" : data["labels_caric"],
+                "labels_photo" : data["labels_photo"].to(config.device),
+                "labels_caric" : data["labels_caric"].to(config.device),
                 
-                "scales_photo" : data["scales_photo"],
-                "scales_caric" : data["scales_caric"],
+                "scales_photo" : data["scales_photo"].to(config.device),
+                "scales_caric" : data["scales_caric"].to(config.device),
                 
             }
             
             discriminator_input_dict = {
                 
-                "images_photo" : data["images_photo"],
-                "images_caric" : data["images_caric"],
+                "images_photo" : data["images_photo"].to(config.device),
+                "images_caric" : data["images_caric"].to(config.device),
                 
                 "generated_caric": None
                 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             generator_output = warpgan_generator(generator_input_dict)
             
             # add generated caricature to discriminator input dict
-            discriminator_input_dict["generated_caric"] = generator_output["generated_caric"]
+            discriminator_input_dict["generated_caric"] = generator_output["generated_caric"].to(config.device)
                     
             # forward pass on discriminator
             discriminator_output = warpgan_discriminator(discriminator_input_dict)
@@ -131,8 +131,8 @@ if __name__ == "__main__":
             # patch adversial losses on generated caricature
                     
             loss_DP, loss_GP = patch_adversarial_loss(discriminator_output["logits_caric"],
-                                                    discriminator_output["logits_photo"],
-                                                    discriminator_output["logits_generated_caric"])
+                                                      discriminator_output["logits_photo"],
+                                                      discriminator_output["logits_generated_caric"])
             
             loss_DP, loss_GP = config.coef_adv * loss_DP, config.coef_adv * loss_GP
             
@@ -146,24 +146,26 @@ if __name__ == "__main__":
             
             loss_G_idt     = loss_idt_caric + loss_idt_photo
             
+            # collect all losses
+        
+            # all losses for generator
+            loss_G = loss_GA + loss_GP + loss_G_idt
+
+            # all losses for discriminator
+            loss_D = loss_DA + loss_DP
+
             # tensorboard writer save all losses
                         
             writer.add_scalar('Loss-Generator/Adversial',     loss_GA,        global_iter)
             writer.add_scalar('Loss-Generator/Patch',         loss_GP,        global_iter)
             writer.add_scalar('Loss-Generator/IdentityCaric', loss_idt_caric, global_iter)
             writer.add_scalar('Loss-Generator/IdentityPhoto', loss_idt_photo, global_iter)
-            
+            writer.add_scalar('Loss-Generator/Total',         loss_G,         global_iter)
+
             writer.add_scalar('Loss-Discriminator/Adversial', loss_DA,        global_iter)
             writer.add_scalar('Loss-Discriminator/Patch',     loss_DP,        global_iter)
-
-            # collect all losses
-        
-            # all losses for generator
-            loss_G = loss_GA + loss_GP + loss_G_idt
+            writer.add_scalar('Loss-Discriminator/Total',     loss_D,         global_iter)
             
-            # all losses for discriminator
-            loss_D = loss_DA + loss_DP
-                    
             # reset gradients of discriminator
             warpgan_discriminator.zero_grad()
             
@@ -192,7 +194,13 @@ if __name__ == "__main__":
                 print(log)
                 
             # check how the generator is doing by saving G's output
-            if global_iter % 1 == 0:
+            if global_iter % 100 == 0:
                 
-                caricature = generator_output["generated_caric"][0].detach().cpu()
-                writer.add_image("Caricature", caricature, global_iter)
+                image_photo = generator_input_dict["images_photo"][0].detach().cpu()
+                image_caric = generator_input_dict["images_caric"][0].detach().cpu()
+
+                generated   = generator_output["generated_caric"][0].detach().cpu()
+                
+                writer.add_image("Images/1 - Photo",       image_photo,     global_iter)
+                writer.add_image("Images/2 - Caricature",  image_caric,     global_iter)
+                writer.add_image("Images/3 - Generated",   generated,       global_iter)

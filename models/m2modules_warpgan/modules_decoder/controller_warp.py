@@ -33,6 +33,7 @@ class WarpController(nn.Module):
         self.in_height   = args.in_height
         self.in_width    = args.in_width
         self.in_channels = args.in_channels
+        self.device      = args.device
 
         # inp: (in_batch, in_channels, in_height, in_width)
         # out: (in_batch, in_channels, in_height, in_width)
@@ -88,7 +89,7 @@ class WarpController(nn.Module):
 
         # shape: (1, self.n_ldmark * 2)
         landmarks_mean = (torch.normal(mean=0, std=50, size=(self.n_ldmark, 2)) + \
-                          torch.tensor([0.5 * self.in_height, 0.5 * self.in_width])).flatten().type(dtype=torch.float32)
+                          torch.tensor([0.5 * self.in_height, 0.5 * self.in_width])).flatten().type(dtype=torch.float32).to(self.device)
         
         # inp: (in_batch, 128)
         # out: (in_batch, n_ldmark * 2)
@@ -108,8 +109,8 @@ class WarpController(nn.Module):
         landmarks_displacement = landmarks_displacement * scales.view(-1, 1)
 
         # shape: (in_batch, n_ldmark, 2)
-        landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2))
-        landmarks_dst = torch.reshape((landmarks_pred + landmarks_displacement).detach().clone(), (-1, self.n_ldmark, 2))
+        landmarks_src = torch.reshape(landmarks_pred.detach().clone(), (-1, self.n_ldmark, 2)).to(self.device)
+        landmarks_dst = torch.reshape((landmarks_pred + landmarks_displacement).detach().clone(), (-1, self.n_ldmark, 2)).to(self.device)
 
         # shape: (1)
         landmarks_norm = torch.mean(torch.norm(landmarks_src - landmarks_dst, dim=(1, 2)))
@@ -120,7 +121,7 @@ class WarpController(nn.Module):
         
         # out_images_transformed: (in_batch, in_height, in_width, initial(default=64))
         # out_dense_flow        : (in_batch, in_height, in_width, 2)
-        images_transformed, dense_flow = sparse_image_warp(images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
+        images_transformed, dense_flow = sparse_image_warp(self.device, images_rendered, landmarks_src, landmarks_dst, regularization_weight = 1e-6, num_boundary_points = 0)
 
         return images_transformed, landmarks_pred, landmarks_norm
 

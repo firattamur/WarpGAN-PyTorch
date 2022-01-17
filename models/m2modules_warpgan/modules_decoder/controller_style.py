@@ -30,6 +30,7 @@ class StyleController(nn.Module):
         self.batch_size = args.in_batch
         self.k          = args.k
         self.style_size = args.style_size
+        self.device     = args.device
 
         # inp: (in_batch, input_size)
         # out: (in_batch, 128)
@@ -88,7 +89,7 @@ class StyleController(nn.Module):
         """
         
         if x is None:
-            x = torch.randn((self.batch_size, self.input_size))
+            x = torch.randn((self.batch_size, self.input_size)).to(self.device)
         
         # inp: (batch_size, input_size)
         # out: (batch_size, 128)
