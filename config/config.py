@@ -14,7 +14,7 @@ name = "WarpGAN - Default"
 summary = 100
 
 # The log interval
-log     = 10
+log     = 1
 
 # Root of WebCaricature dataset
 root = "./datasets/"
@@ -74,7 +74,7 @@ epoch_size = 5000
 num_epochs = 100
 
 # checkpoint_interval
-checkpoint_interval = 5
+checkpoint_interval = 1
 
 # auto use prev checkpoints
 auto_use_checkpoint = True
