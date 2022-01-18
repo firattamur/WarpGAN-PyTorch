@@ -43,14 +43,21 @@ class WarpGANGenerator(nn.Module):
         :param input: input dict contains input images, labels and scales
             :shape: {
 
-                images_caric: (in_batch, in_channels, in_height, in_width)
-                images_photo: (in_batch, in_channels, in_height, in_width)
+                is_train: True
+                    images_caric: (in_batch, in_channels, in_height, in_width)
+                    images_photo: (in_batch, in_channels, in_height, in_width)
 
-                labels_caric: (in_batch, 1)
-                labels_photo: (in_batch, 1)
+                    labels_caric: (in_batch, 1)
+                    labels_photo: (in_batch, 1)
 
-                scales_caric: (in_batch, 1)
-                scales_photo: (in_batch, 1)
+                    scales_caric: (in_batch, 1)
+                    scales_photo: (in_batch, 1)
+
+                is_train: False
+
+                    images_photo: (in_batch, in_channels, in_height, in_width)
+                    styles_photo: (in_batch, style_size)
+                    scales_photo: (in_batch, 1)
 
             }
 
@@ -74,10 +81,11 @@ class WarpGANGenerator(nn.Module):
         if not self.is_train:
 
             images_photo = input["images_photo"]
+            styles_photo = input["styles_photo"]
             scales_photo = input["scales_photo"] 
 
             encoded_photo, styles_B  = self.encoder(images_photo)
-            generated_caric, _, _, _ = self.decoder(encoded_photo, scales_photo, None)
+            generated_caric, _, _, _ = self.decoder(encoded_photo, scales_photo, styles_photo)
 
             return generated_caric
 

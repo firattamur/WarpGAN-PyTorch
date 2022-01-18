@@ -39,27 +39,7 @@ in_height = 256
 in_channels  = 3
 n_classes    = 126
 
-# Preprocess for training
-preprocess_train = [
-    ["random_flip"],
-    ["standardize", "mean_scale"],
-]
-
-# Preprocess for testing
-preprocess_test = [
-    ["standardize", "mean_scale"],
-]
-
-# Number of GPUs
-num_gpus = 1
-
-# Number of workers for dataloader
-workers = 2
-
 ####### NETWORK #######
-
-# The network architecture
-network = "models/default.py"
 
 # Dimensionality of the bottleneck layer in discriminator
 bottleneck_size = 512

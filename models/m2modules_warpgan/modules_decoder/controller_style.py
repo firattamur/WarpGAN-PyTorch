@@ -26,7 +26,6 @@ class StyleController(nn.Module):
         super().__init__()
 
         # unpack input parameters from args        
-        self.input_size = args.style_size
         self.batch_size = args.in_batch
         self.k          = args.k
         self.style_size = args.style_size
@@ -82,16 +81,16 @@ class StyleController(nn.Module):
         Returns two (batch_size, 1, 1, 4 * k) shaped tensors, gamma and beta coefficients
         
         :param x: style encodings
-            :shape: (batch_size, input_size)
+            :shape: (batch_size, style_size)
         :return : out
             :shape: (batch_size, 2, 1, 4 * k)
         
         """
         
         if x is None:
-            x = torch.randn((self.batch_size, self.input_size)).to(self.device)
+            x = torch.randn((self.batch_size, self.style_size)).to(self.device)
         
-        # inp: (batch_size, input_size)
+        # inp: (batch_size, style_size)
         # out: (batch_size, 128)
         out = self.linears(x)
 

@@ -320,7 +320,7 @@ if __name__ == "__main__":
 
             }
 
-            name = f"checkpoint_{global_iter // config.checkpoint_interval + 1}.pth"
+            name = f"checkpoint_{epoch // config.checkpoint_interval + 1}.pth"
             save_to = os.path.join(config.checkpoints_path, name)
 
             save_checkpoint(model=model, path=save_to)
