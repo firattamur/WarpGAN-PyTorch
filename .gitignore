@@ -127,7 +127,9 @@ dmypy.json
 datasets/WebCaricature
 datasets/WebCaricatureAligned256
 
+# checkpoints
+checkpoints/
+
 # tensorboard expriments
 runs/
-
 

@@ -28,6 +28,9 @@ train_txt = "index_txt/train.txt"
 # Test data list
 test_txt  = "index_txt/test.txt"
 
+# checkpoint path
+checkpoints_path = "./checkpoints"
+
 # Target image size (h,w) for the input of network
 in_width  = 256
 in_height = 256
@@ -76,9 +79,6 @@ k = 64
 # number of landmark points
 n_ldmark = 16
 
-# checkpoint path
-checkpoint_path = "./checkpoints"
-
 ####### TRAINING STRATEGY #######
 
 # Optimizer
@@ -91,7 +91,13 @@ in_batch = 2
 epoch_size = 5000
 
 # Number of epochs
-num_epochs = 50
+num_epochs = 100
+
+# checkpoint_interval
+checkpoint_interval = 5
+
+# auto use prev checkpoints
+auto_use_checkpoint = True
 
 # learning rate strategy
 learning_rate_strategy = "linear"

@@ -4,6 +4,7 @@ Train WarpGAN Model.
 
 """
 import os
+import glob
 import random
 
 import torch
@@ -33,6 +34,61 @@ invNormalize = transforms.Normalize(
                                     std=[1/0.229, 1/0.224, 1/0.225]
                                     )
 
+
+def save_checkpoint(model: dict, path: str) -> None:
+    """
+
+    Save torch model state dict to specified path.
+
+    :param model: input dict contains state dicts for models and optimizers
+    :param path : path to save state dict
+
+    """
+
+    torch.save({
+
+                "warpgan_G"   : model["warpgan_G"].state_dict(),
+                "warpgan_D"   : model["warpgan_D"].state_dict(),
+                "optimizer_G" : model["optimizer_G"].state_dict(),
+                "optimizer_D" : model["optimizer_D"].state_dict(),
+                "epoch"       : model["epoch"]
+
+                }, path)
+
+
+def load_checkpoint(path: str) -> dict:
+    """
+
+    Load torch model state dict from specified path.
+
+    :param path : path to load state dict
+
+    """
+    checkpoint = torch.load(path)
+
+    return checkpoint
+
+
+def last_checkpoint(path: str) -> str:
+    """
+
+    Sort checkpoints saved date and return last store checkpoint path.
+
+    :param path: path for checkpoints folder.
+    :return    : last stored checkpoint path
+
+    """
+
+    checkpoints = glob.glob(os.path.join(path, "*.pth"))
+
+    if len(checkpoints) == 0:
+        return None
+
+    latest = max(checkpoints, key=os.path.getctime)
+
+    return latest
+
+
 if __name__ == "__main__":
 
     # load configuration file from specified configuration file path
@@ -50,8 +106,8 @@ if __name__ == "__main__":
     print(f"\nTraining Device: {config.device}\n")
 
     # load models
-    warpgan_generator     = WarpGANGenerator(config).to(config.device)
-    warpgan_discriminator = WarpGANDiscriminator(config).to(config.device)
+    warpgan_G = WarpGANGenerator(config).to(config.device)
+    warpgan_D = WarpGANDiscriminator(config).to(config.device)
 
     # load losses
     adversarial_loss       = AdversarialLoss(config).to(config.device)
@@ -59,18 +115,45 @@ if __name__ == "__main__":
 
     # setup Adam optimizers for both G and D
 
-    optimizerG = optim.Adam(warpgan_generator.parameters(), lr=config.lr, weight_decay=config.weight_decay,
+    optimizer_G = optim.Adam(warpgan_G.parameters(), lr=config.lr, weight_decay=config.weight_decay,
                             betas=(config.optimizer[1]["beta1"], config.optimizer[1]["beta2"]))
 
-    optimizerD = optim.Adam(warpgan_discriminator.parameters(), lr=config.lr, weight_decay=config.weight_decay,
+    optimizer_D = optim.Adam(warpgan_D.parameters(), lr=config.lr, weight_decay=config.weight_decay,
                             betas=(config.optimizer[1]["beta1"], config.optimizer[1]["beta2"]))
+
+    # start index for epoch
+    epoch_start = 0
+
+    # check if there any checkpoints
+    checkpoint_path = last_checkpoint(path=config.checkpoints_path)
+
+    if checkpoint_path:
+
+        checkpoint  = load_checkpoint(path=checkpoint_path)
+
+        # load state dicts of models and optimizers
+        warpgan_G.load_state_dict(checkpoint["warpgan_G"])
+        warpgan_D.load_state_dict(checkpoint["warpgan_D"])
+        optimizer_G.load_state_dict(checkpoint["optimizer_G"])
+        optimizer_D.load_state_dict(checkpoint["optimizer_D"])
+    
+        epoch_start = checkpoint["epoch"]
+
+        # load and set train mode
+        warpgan_G.train()
+        warpgan_D.train()
+
+        print(f"Checkpoint {checkpoint_path} loaded. Start Epoch: {epoch_start}...\n")
+
+    else:
+
+        print("No checkpoint found...\n")
 
     # Training Loop
-
-    writer = SummaryWriter("runs/WarpGAN-Tensorboard")
+    writer = SummaryWriter("./runs/exp-1")
 
     # For each epoch
-    for epoch in range(config.num_epochs):
+    for epoch in range(epoch_start, config.num_epochs):
         
         # For each batch in the dataloader
         for i, data in enumerate(dataloader, 0):
@@ -108,13 +191,13 @@ if __name__ == "__main__":
             # ------------------------------------------
                     
             # forward pass on generator
-            generator_output = warpgan_generator(generator_input_dict)
+            generator_output = warpgan_G(generator_input_dict)
             
             # add generated caricature to discriminator input dict
             discriminator_input_dict["generated_caric"] = generator_output["generated_caric"].to(config.device)
                     
             # forward pass on discriminator
-            discriminator_output = warpgan_discriminator(discriminator_input_dict)
+            discriminator_output = warpgan_D(discriminator_input_dict)
                     
             # adversial losses on generated caricature
             
@@ -173,22 +256,22 @@ if __name__ == "__main__":
             writer.add_scalar('Loss-Discriminator/Total',     loss_D,         global_iter)
             
             # reset gradients of discriminator
-            warpgan_discriminator.zero_grad()
+            warpgan_D.zero_grad()
             
             # calculate gradients for discriminator
             loss_D.backward(retain_graph=True)
                     
             # reset gradients of generator
-            warpgan_generator.zero_grad()
+            warpgan_G.zero_grad()
         
             # calculate gradients for generator
             loss_G.backward()
             
             # optimize generator for single step
-            optimizerD.step()
+            optimizer_D.step()
             
             # optimize generator for single step
-            optimizerG.step()
+            optimizer_G.step()
             
             # output training stats
             if i % config.log == 0:
@@ -222,3 +305,24 @@ if __name__ == "__main__":
                 writer.add_image("Images/1 - Photo",       image_photo,     global_iter)
                 writer.add_image("Images/2 - Caricature",  image_caric,     global_iter)
                 writer.add_image("Images/3 - Generated",   generated,       global_iter)
+
+
+        # save a checkpoint
+        if epoch % config.checkpoint_interval == 0:
+            
+            model = {
+
+                "warpgan_G"     : warpgan_G,
+                "warpgan_D"     : warpgan_D,
+                "optimizer_G"   : optimizer_G,
+                "optimizer_D"   : optimizer_D,
+                "epoch"         : epoch,
+
+            }
+
+            name = f"checkpoint_{global_iter // config.checkpoint_interval + 1}.pth"
+            save_to = os.path.join(config.checkpoints_path, name)
+
+            save_checkpoint(model=model, path=save_to)
+
+            print(f"Checkpoint {name} saved.\n")
